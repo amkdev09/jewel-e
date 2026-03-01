@@ -1,0 +1,95 @@
+$breakpoint-xs: 0px;
+$breakpoint-sm: 600px;
+$breakpoint-md: 900px;
+$breakpoint-lg: 1200px;
+$breakpoint-xl: 1536px;
+
+body {
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    color: var(--color-foreground);
+    font-family: var(--font-spinnaker);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+img {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 100px #0A001F inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff !important;
+    border-radius: none !important;
+}
+
+/* Custom Scrollbar - Matched to design (dark track, light thumb, arrow buttons) */
+* {
+
+    /* Firefox */
+    scrollbar-width: auto;
+    scrollbar-color: var(--color-gray-400) #2E2E2E;
+
+    /* Webkit browsers (Chrome, Safari, Edge) */
+    &::-webkit-scrollbar {
+        width: 14px;
+        height: 14px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #2E2E2E;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-gray-400);
+        border: 1px solid #1f1f1f;
+        border-radius: 9999px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #D3D3D3;
+    }
+
+    /* Top and bottom arrow buttons */
+    &::-webkit-scrollbar-button:vertical:decrement {
+        height: 18px;
+        background: #2E2E2E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23C0C0C0' d='M5 0l5 6H0z'/%3E%3C/svg%3E") center center no-repeat;
+        border-bottom: 1px solid #252525;
+    }
+
+    &::-webkit-scrollbar-button:vertical:increment {
+        height: 18px;
+        background: #2E2E2E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23C0C0C0' d='M5 6L0 0h10z'/%3E%3C/svg%3E") center center no-repeat;
+        border-top: 1px solid #252525;
+    }
+
+    &::-webkit-scrollbar-button:horizontal:decrement {
+        width: 18px;
+        background: #2E2E2E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10' viewBox='0 0 6 10'%3E%3Cpath fill='%23C0C0C0' d='M0 5l6-5v10z'/%3E%3C/svg%3E") center center no-repeat;
+        border-right: 1px solid #252525;
+    }
+
+    &::-webkit-scrollbar-button:horizontal:increment {
+        width: 18px;
+        background: #2E2E2E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='10' viewBox='0 0 6 10'%3E%3Cpath fill='%23C0C0C0' d='M6 5L0 0v10z'/%3E%3C/svg%3E") center center no-repeat;
+        border-left: 1px solid #252525;
+    }
+}
