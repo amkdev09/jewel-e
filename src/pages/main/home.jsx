@@ -1,17 +1,14 @@
 import React from "react";
 
-/* Pixel-perfect Jewel-e homepage clone. Exact px values from design spec. */
-
 const ICON = ({ d, className = "w-4 h-4" }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path d={d} />
   </svg>
 );
 
-const SearchIcon = () => <ICON d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />;
-const HeartIcon = () => <ICON d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />;
-const CartIcon = () => <ICON d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />;
-const PersonIcon = () => <ICON d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />;
+const currentSlide = 1;
+const totalSlides = 3;
+
 const ChevronLeftIcon = () => <ICON d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />;
 const ChevronRightIcon = () => <ICON d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />;
 const ArrowUpIcon = () => <ICON d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" />;
@@ -27,85 +24,52 @@ const SocialIcons = ({ className = "" }) => (
   </div>
 );
 
-const TopBar = () => (
-  <div
-    className="flex items-center justify-between text-white"
-    style={{
-      height: "32px",
-      backgroundColor: "#4E0756",
-      paddingLeft: "35px",
-      paddingRight: "35px",
-      fontSize: "12px",
-      lineHeight: "1.2",
-    }}
-  >
-    <span>Download our app</span>
-    <div className="flex items-center gap-[12px]">
-      <SocialIcons />
-      <span className="w-px h-3 bg-white/60 shrink-0" aria-hidden />
-      <a href="#contact" className="text-white hover:opacity-80 transition-opacity">
-        Contact Us
-      </a>
-    </div>
-  </div>
-);
-
-const Header = () => (
-  <header
-    className="sticky top-0 z-50 flex items-center justify-between bg-white"
-    style={{
-      height: "85px",
-      paddingLeft: "35px",
-      paddingRight: "35px",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-    }}
-  >
-    <a href="/" className="text-[22px] font-semibold bg-[linear-gradient(135deg,#4E0756_0%,#8C309B_50%,#FFE082_100%)] bg-clip-text text-transparent">
-      Jewel-e
-    </a>
-    <nav className="flex items-center gap-[34px]" style={{ fontSize: "14px", color: "#333333", fontWeight: 500 }}>
-      <a href="#shop" className="hover:text-[#4E0756] transition-colors">Shop</a>
-      <a href="#new" className="hover:text-[#4E0756] transition-colors">New Arrivals</a>
-      <a href="#bestsellers" className="hover:text-[#4E0756] transition-colors">Best Sellers</a>
-      <a href="#offers" className="hover:text-[#4E0756] transition-colors">Offers</a>
-      <a href="#prebook" className="hover:text-[#4E0756] transition-colors">Pre-book Gold/Silver</a>
-      <a href="#engage" className="hover:text-[#4E0756] transition-colors">Engage with us</a>
-    </nav>
-    <div className="flex items-center gap-[24px]" style={{ color: "#333333" }}>
-      <button type="button" className="p-1 hover:opacity-70 transition-opacity" aria-label="Search"><SearchIcon /></button>
-      <button type="button" className="p-1 hover:opacity-70 transition-opacity" aria-label="Wishlist"><HeartIcon /></button>
-      <button type="button" className="p-1 hover:opacity-70 transition-opacity" aria-label="Cart"><CartIcon /></button>
-      <button type="button" className="p-1 hover:opacity-70 transition-opacity" aria-label="Account"><PersonIcon /></button>
-    </div>
-  </header>
-);
-
 const Hero = () => (
   <section
-    className="relative flex items-center bg-[#4E0756]"
-    style={{ height: "650px", paddingLeft: "40px" }}
+    className="flex items-center my-8 rounded-[12px] flex-col gap-[24px]"
+    style={{ height: "720px" }}
   >
-    <div
-      className="absolute inset-0 bg-cover bg-center opacity-90"
-      style={{
-        backgroundImage: "linear-gradient(90deg, rgba(78,7,86,0.85) 0%, rgba(78,7,86,0.4) 50%, transparent 100%), url(https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=1600&q=80)",
-      }}
-    />
-    <div className="relative z-10 max-w-[560px]">
-      <p className="text-white" style={{ fontSize: "24px", lineHeight: 1.3, marginBottom: "8px" }}>
-        SHOP STUNNING DESIGNS WITH
-      </p>
-      <p className="font-bold" style={{ fontSize: "72px", lineHeight: 1.1, color: "#FFE082", marginBottom: "8px", letterSpacing: "-0.02em" }}>
-        EXTRA ₹500/GM
-      </p>
-      <p className="text-white" style={{ fontSize: "18px", lineHeight: 1.4 }}>
-        ON ALL CUSTOM GOLD JEWELLERY
-      </p>
+    <div className="relative w-full h-full flex items-center pl-[40px] rounded-[inherit]">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-90 rounded-[inherit] bg-[#4E0756]"
+        style={{
+          backgroundImage: "linear-gradient(90deg, rgba(78,7,86,0.85) 0%, rgba(78,7,86,0.4) 50%, #4E0756 100%), url(https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=1600&q=80)",
+        }}
+      />
+      <div className="relative z-10 max-w-[560px]">
+        <p className="text-white" style={{ fontSize: "24px", lineHeight: 1.3, marginBottom: "8px" }}>
+          SHOP STUNNING DESIGNS WITH
+        </p>
+        <p className="font-bold" style={{ fontSize: "72px", lineHeight: 1.1, color: "#FFE082", marginBottom: "8px", letterSpacing: "-0.02em" }}>
+          EXTRA ₹500/GM
+        </p>
+        <p className="text-white" style={{ fontSize: "18px", lineHeight: 1.4 }}>
+          ON ALL CUSTOM GOLD JEWELLERY
+        </p>
+      </div>
     </div>
-    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} className="rounded-full bg-white" style={{ width: "8px", height: "8px", opacity: i === 1 ? 1 : 0.5 }} />
-      ))}
+    <div className="flex items-center gap-2">
+      {[...Array(totalSlides)].map((_, index) => {
+        const slideNumber = index + 1;
+
+        if (slideNumber === currentSlide) {
+          return (
+            <span
+              key={slideNumber}
+              className="px-3 py-[4px] rounded-full bg-[#2F2F2F] text-white text-[12px] leading-none font-medium"
+            >
+              {currentSlide}/{totalSlides}
+            </span>
+          );
+        }
+
+        return (
+          <span
+            key={slideNumber}
+            className="w-2 h-2 rounded-full bg-gray-400 opacity-60"
+          />
+        );
+      })}
     </div>
   </section>
 );
@@ -126,23 +90,33 @@ const BtnPrimary = ({ children, className = "" }) => (
 );
 
 const ProductCard = ({ name, price, image }) => (
-  <div className="flex flex-col bg-white rounded-[6px] overflow-hidden" style={{ boxShadow: "0 4px 8px rgba(0, 0, 0, 0.05)" }}>
-    <div className="aspect-[3/4] bg-[#F5F0F8] relative overflow-hidden">
+  <div className="flex flex-col rounded-[6px] overflow-hidden" >
+    <div className="aspect-[4/4] bg-[#F5F0F8] relative overflow-hidden rounded-[6px]" style={{ boxShadow: "0 4px 8px rgba(0, 0, 0, 0.05)" }}>
       <img src={image} alt={name} className="w-full h-full object-cover" />
     </div>
-    <div className="p-4">
-      <p className="text-[#333333]" style={{ fontSize: "14px", marginBottom: "6px" }}>{name}</p>
-      <p className="font-bold text-[#1F1F1F]" style={{ fontSize: "16px", marginBottom: "12px" }}>{price}</p>
-      <BtnPrimary className="w-full py-2 text-center">ADD TO CART</BtnPrimary>
+    <div className="p-4 w-[260px] rounded-md">
+      <div className="flex items-center gap-2">
+        <span className="text-[#4E0756] font-semibold text-lg">
+          {price}
+        </span>
+
+        <span className="text-gray-500 line-through text-sm">
+          ₹7,000
+        </span>
+      </div>
+
+      <p className="text-gray-600 text-sm mt-1 truncate">
+        Gratitude Gold Plated 925 Silver Ring
+      </p>
     </div>
   </div>
 );
 
 const TrendingSection = () => (
-  <section className="flex gap-0" style={{ marginTop: "70px" }}>
+  <section className="flex gap-0 mx-8.75 rounded-[12px] overflow-hidden h-[380px] shadow-lg" style={{ marginTop: "30px" }}>
     <div
       className="relative flex flex-col justify-center pl-[50px] pr-[40px] overflow-hidden"
-      style={{ width: "42%", minHeight: "480px", backgroundColor: "#4E0756" }}
+      style={{ width: "50%", backgroundColor: "#4E0756" }}
     >
       <p className="text-white relative z-10" style={{ fontSize: "22px", marginBottom: "8px" }}>TRENDING DESIGNS</p>
       <p className="text-white font-bold relative z-10" style={{ fontSize: "36px", marginBottom: "20px", lineHeight: 1.2 }}>GET UPTO 40% OFF</p>
@@ -151,7 +125,8 @@ const TrendingSection = () => (
         <img src="https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" alt="" className="max-h-full object-contain object-right-bottom" />
       </div>
     </div>
-    <div className="flex-1 bg-[#F5F0F8] py-[50px] pl-[40px] pr-[40px] relative">
+    <div className="py-[50px] pl-[40px] pr-[40px] relative"
+      style={{ background: "linear-gradient(180deg, #CFC1FF 0%, #FFFFFF 100%)", width: "50%" }}>
       <div className="grid grid-cols-4 gap-5">
         {["MIRA NACKLACE", "DESIGN TWO", "DESIGN THREE", "DESIGN FOUR"].map((name, i) => (
           <ProductCard
@@ -171,10 +146,9 @@ const TrendingSection = () => (
 );
 
 const GuayaSection = () => (
-  <section className="flex gap-0" style={{ marginTop: "70px" }}>
+  <section className="flex gap-4 rounded-[12px] overflow-hidden h-[880px] shadow-lg" style={{ marginTop: "30px" }}>
     <div
-      className="relative flex items-end justify-start overflow-hidden"
-      style={{ width: "50%", minHeight: "520px" }}
+      className="relative flex items-end justify-start overflow-hidden rounded-[12px] flex-1 min-h-0"
     >
       <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&q=80" alt="" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -183,14 +157,14 @@ const GuayaSection = () => (
         <p className="text-white" style={{ fontSize: "36px", fontFamily: "Great Vibes, cursive" }}>Gulabo</p>
       </div>
     </div>
-    <div className="flex-1 flex flex-col gap-0">
-      <div className="relative flex flex-col justify-center items-start pl-[40px] overflow-hidden" style={{ minHeight: "260px", backgroundColor: "#7EB5C6" }}>
+    <div className="flex-1 flex flex-col gap-4 min-h-0">
+      <div className="relative flex flex-col justify-center items-start pl-[40px] overflow-hidden rounded-[12px] flex-1 min-h-0" style={{ backgroundColor: "#7EB5C6" }}>
         <img src="https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" alt="" className="absolute right-0 bottom-0 w-48 h-full object-cover object-right opacity-80" />
         <p className="text-white font-semibold relative z-10" style={{ fontSize: "44px", letterSpacing: "0.02em" }}>LATEST</p>
         <p className="text-white relative z-10" style={{ fontSize: "20px", marginBottom: "16px" }}>DESIGNS</p>
         <BtnPrimary className="relative z-10">SHOP NOW</BtnPrimary>
       </div>
-      <div className="relative flex flex-col justify-center items-start pl-[40px] overflow-hidden" style={{ minHeight: "260px", backgroundColor: "#2C2C2C" }}>
+      <div className="relative flex flex-col justify-center items-start pl-[40px] overflow-hidden rounded-[12px] flex-1 min-h-0" style={{ backgroundColor: "#2C2C2C" }}>
         <img src="https://images.unsplash.com/photo-1596944925780-2e1d969b2a8c?w=400&q=80" alt="" className="absolute right-0 bottom-0 w-48 h-full object-cover object-right opacity-70" />
         <p className="text-white relative z-10" style={{ fontSize: "22px", marginBottom: "4px" }}>In Season,</p>
         <p className="text-white font-semibold relative z-10" style={{ fontSize: "36px", letterSpacing: "0.02em" }}>PEARL</p>
@@ -200,19 +174,125 @@ const GuayaSection = () => (
   </section>
 );
 
-const CategoryRow = () => {
-  const categories = ["Earrings", "Necklace", "Rings", "Bangles", "Pendant", "Bracelets"];
-  return (
-    <section className="flex justify-center gap-[40px] py-[50px] bg-white" style={{ marginTop: "70px", paddingLeft: "40px", paddingRight: "40px" }}>
-      {categories.map((label) => (
-        <div key={label} className="flex flex-col items-center gap-3 cursor-pointer group">
-          <div className="w-16 h-16 rounded-full bg-[#F5F0F8] flex items-center justify-center text-[#4E0756] group-hover:bg-[#4E0756] group-hover:text-[#FFE082] transition-colors" style={{ fontSize: "24px" }}>◆</div>
-          <span className="text-[#333333]" style={{ fontSize: "14px", fontWeight: 500 }}>{label}</span>
+const GiftIcon = () => (
+  <svg className="w-16 h-16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" stroke="#8B7B9E" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="#E8E0F0" opacity="0.9" />
+  </svg>
+);
+
+const CATEGORY_CARDS = [
+  { label: "COUPLE RINGS", image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&q=80" },
+  { label: "HEART PENDANTS", image: "https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" },
+  { label: "ROSE GOLD EARRINGS FOR HER", image: "https://images.unsplash.com/photo-1596944925780-2e1d969b2a8c?w=400&q=80" },
+  { label: "GIFTS UNDER 15K", image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80" },
+  { label: "EVIL EYE DESIGNS", image: "https://images.unsplash.com/photo-1611652022419-a9419f74343a?w=400&q=80" },
+  { label: "GOLD CHAINS FOR HIM", image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&q=80" },
+];
+
+const CategoryRow = () => (
+  <section
+    className="flex gap-5 mx-8.75 py-[50px] overflow-x-auto border-2 border-[#8863FB]/12 rounded-[12px]"
+    style={{ marginTop: "70px", paddingLeft: "40px", paddingRight: "40px", backgroundColor: "#F5F0F8" }}
+  >
+    <div className="flex gap-5 items-center justify-center flex-col w-[20%]">
+      <GiftIcon />
+      <p
+        className="text-center py-3 px-2 text-[#4F3267] font-medium leading-snug min-h-[44px] flex items-center justify-center"
+        style={{ fontSize: "12px" }}
+      >
+        Wrapped with love
+      </p>
+    </div>
+    {CATEGORY_CARDS.map(({ label, icon, image }) => (
+      <a
+        key={label}
+        href="/jewellery"
+        className="flex flex-col w-[220px] flex-shrink-0 "
+        style={{ height: "280px" }}
+      >
+        <div
+          className="w-full flex-shrink-0 overflow-hidden rounded-t-2xl flex items-center justify-center bg-white rounded-2xl overflow-hidden cursor-pointer transition-shadow hover:shadow-md"
+          style={{ height: "70%" }}
+        >
+          <img src={image} alt="" className="w-full h-full object-contain" />
         </div>
-      ))}
-    </section>
-  );
-};
+        <p
+          className="flex-1 text-center py-4 px-3 text-[#4F3267] font-semibold text-[1rem] uppercase tracking-wide leading-snug flex items-center justify-center"
+        >
+          {label}
+        </p>
+      </a>
+    ))}
+  </section >
+);
+
+const GUARANTEE_ITEMS = [
+  {
+    label: "100% Certified",
+    bg: "#E3F2FD",
+    border: "#90CAF9",
+    icon: (
+      <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+    ),
+  },
+  {
+    label: "15 Day Exchange",
+    bg: "#FCE4EC",
+    border: "#F48FB1",
+    icon: (
+      <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm0-12H5V6h14v2z" />
+    ),
+  },
+  {
+    label: "Lifetime Exchange",
+    bg: "#E8F5E9",
+    border: "#81C784",
+    icon: (
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+    ),
+  },
+  {
+    label: "One Year Warranty",
+    bg: "#FFF9C4",
+    border: "#FFEE58",
+    icon: (
+      <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+    ),
+  },
+];
+
+const GuaranteeStrip = () => (
+  <section
+    className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 py-10 px-6"
+    style={{ backgroundColor: "#faf8fc" }}
+  >
+    {GUARANTEE_ITEMS.map(({ label, bg, border, icon }) => (
+      <div key={label} className="flex items-center gap-3">
+        <div
+          className="flex items-center justify-center rounded-full flex-shrink-0"
+          style={{
+            width: "40px",
+            height: "40px",
+            backgroundColor: bg,
+            border: `1.5px solid ${border}`,
+          }}
+        >
+          <svg
+            className="w-5 h-5"
+            fill="#4F3267"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {icon}
+          </svg>
+        </div>
+        <span className="text-[#4F3267] font-medium text-sm whitespace-nowrap">
+          {label}
+        </span>
+      </div>
+    ))}
+  </section>
+);
 
 const GiftEmeraldSection = () => (
   <section className="flex gap-0" style={{ marginTop: "70px" }}>
@@ -457,13 +537,12 @@ const StickySideNav = () => (
 
 const Home = () => (
   <div className="min-h-screen bg-white text-[#333333]" style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>
-    <TopBar />
-    <Header />
-    <main>
+    <main className="px-5">
       <Hero />
       <TrendingSection />
       <GuayaSection />
       <CategoryRow />
+      <GuaranteeStrip />
       <GiftEmeraldSection />
       <BestSellersSection />
       <ThreeBannersRow />
@@ -471,10 +550,7 @@ const Home = () => (
       <GradientBannersRow />
       <InstagramSection />
       <NewsletterSection />
-      <Footer />
-      <LegalFinePrint />
     </main>
-    <StickySideNav />
   </div>
 );
 

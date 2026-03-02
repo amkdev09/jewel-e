@@ -1,5 +1,6 @@
 import React from "react";
 import Header from "./header";
+import Footer from "./footer";
 
 const AppLayout = (props) => {
   const { children, isBottomNav = false, isHeader = false } = props;
@@ -7,7 +8,10 @@ const AppLayout = (props) => {
   return (
     <section className="mb-32">
       {isHeader && <Header />}
-      {children}
+      <div className="pt-[120px]">
+        {children}
+      </div>
+      <Footer />
     </section>
   )
 };

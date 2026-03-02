@@ -1,45 +1,23 @@
 .css-1fs27mr {
-    border: 1px solid #DE57E5;
-    background: #F8EBFB;
     border-radius: 12px;
     padding: 9px 10px;
     cursor: pointer;
     position: relative;
-    display: -webkit-inline-box;
-    display: -webkit-inline-flex;
-    display: -ms-inline-flexbox;
-    display: inline-flex;
-    position: relative;
-    -webkit-align-items: center;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-
-    span {
-        margin-left: 12px;
-        font-family: 'InterSemiBold', 'NotoSansDevanagariSemiBold', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        line-height: 18.52px;
-        text-align: left;
-        color: #4F3267;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
 
     .badge {
         background: #EB4F5C;
         color: #FFFFFF;
-        font-size: 0.8rem;
         font-family: 'InterBold', 'NotoSansDevanagariBold', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         border-radius: 22px;
-        margin-left: 10px;
         position: absolute;
-        bottom: 21px;
-        right: 0;
+        top: -5px;
+        right: 10px;
         width: 40px;
-        height: 12px;
-        font-size: 0.8rem;
-        padding: 0px 10px;
+        font-size: 8px;
+        line-height: 1.4;
+        font-weight: 600;
+        text-align: center;
+        padding: 0 0;
     }
 }
 

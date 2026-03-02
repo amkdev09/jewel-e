@@ -413,9 +413,6 @@ const Jewellery = () => (
     className="min-h-screen flex flex-col bg-white text-[#333333]"
     style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
   >
-    <HeaderTopBar />
-    <HeaderMain />
-    <HeaderNav />
     <BreadcrumbBar />
     <MainContent />
     <FooterSection />

@@ -8,13 +8,9 @@ body {
 }
 
 @font-face {
-  font-family: "Spinnaker";
-  src: url("/src/assets/fonts/Spinnaker-Regular.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Wavacorp";
-  src: url("/src/assets/fonts/Wavacorp.otf") format("opentype");
+  font-family: 'InterSemiBold';
+  src:
+    url("/src/assets/fonts/static/Inter_28pt-SemiBold.ttf") format("ttf"),
 }
 
 :root {

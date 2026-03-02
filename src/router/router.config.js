@@ -7,9 +7,19 @@ export const commonRouters = [
     isHeader: true,
   },
   {
+    path: "/signup",
+    component: asyncComponent(() => import("../pages/auth/signup.jsx")),
+    isHeader: true,
+  },
+  {
+    path: "/login",
+    component: asyncComponent(() => import("../pages/auth/login.jsx")),
+    isHeader: true,
+  },
+  {
     path: "/jewellery",
     component: asyncComponent(() => import("../pages/main/jewellery.jsx")),
-    isHeader: false,
+    isHeader: true,
   }
 ];
 
