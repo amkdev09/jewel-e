@@ -1,5 +1,5 @@
 import React from "react";
-
+const ring = "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 /* Pixel-perfect Jewellery listing page — exact clone of design. */
 
 const ICON = ({ d, className = "", viewBox = "0 0 24 24" }) => (
@@ -44,26 +44,26 @@ const FILTER_SECTIONS = [
 ];
 
 const MOCK_PRODUCTS = [
-  { name: "Floral Gold Plated Bracelet", price: "₹ 21,999", original: "₹ 25,000", save: "₹ 3,000", exclusive: true, badge: "NEW", image: "https://images.unsplash.com/photo-1611652022419-a9419f74343a?w=400&q=80" },
-  { name: "Classic Gold Bangle Set", price: "₹ 18,500", original: null, save: null, exclusive: false, badge: null, image: "https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" },
-  { name: "Designer Kada Bracelet", price: "₹ 32,000", original: "₹ 35,000", save: "₹ 3,000", exclusive: true, badge: null, image: "https://images.unsplash.com/photo-1596944925780-2e1d969b2a8c?w=400&q=80" },
-  { name: "Elegant Pearl Bracelet", price: "₹ 14,999", original: null, save: null, exclusive: false, badge: "NEW", image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80" },
-  { name: "Artistic Gold Bracelet", price: "₹ 27,500", original: "₹ 30,000", save: "₹ 2,500", exclusive: false, badge: null, image: "https://images.unsplash.com/photo-1611652022419-a9419f74343a?w=400&q=80" },
-  { name: "Traditional Bangle Pair", price: "₹ 22,000", original: null, save: null, exclusive: true, badge: null, image: "https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" },
-  { name: "Contemporary Cuff Bracelet", price: "₹ 19,999", original: "₹ 24,000", save: "₹ 4,001", exclusive: false, badge: "NEW", image: "https://images.unsplash.com/photo-1596944925780-2e1d969b2a8c?w=400&q=80" },
-  { name: "Minimalist Gold Bracelet", price: "₹ 16,500", original: null, save: null, exclusive: false, badge: null, image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80" },
-  { name: "Statement Gold Bracelet", price: "₹ 45,000", original: "₹ 50,000", save: "₹ 5,000", exclusive: true, badge: null, image: "https://images.unsplash.com/photo-1611652022419-a9419f74343a?w=400&q=80" },
-  { name: "Pearl & Gold Bracelet", price: "₹ 28,750", original: null, save: null, exclusive: false, badge: "NEW", image: "https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" },
-  { name: "Tennis Bracelet Style", price: "₹ 38,000", original: "₹ 42,000", save: "₹ 4,000", exclusive: false, badge: null, image: "https://images.unsplash.com/photo-1596944925780-2e1d969b2a8c?w=400&q=80" },
-  { name: "Oxidised Silver Bracelet", price: "₹ 12,999", original: null, save: null, exclusive: true, badge: null, image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80" },
-  { name: "Bridal Gold Bracelet", price: "₹ 52,000", original: "₹ 58,000", save: "₹ 6,000", exclusive: false, badge: "NEW", image: "https://images.unsplash.com/photo-1611652022419-a9419f74343a?w=400&q=80" },
-  { name: "Diamond Line Bracelet", price: "₹ 65,000", original: null, save: null, exclusive: true, badge: null, image: "https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" },
-  { name: "Rose Gold Bangle", price: "₹ 24,500", original: "₹ 27,000", save: "₹ 2,500", exclusive: false, badge: null, image: "https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" },
-  { name: "Kids Charm Bracelet", price: "₹ 8,999", original: null, save: null, exclusive: false, badge: "NEW", image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80" },
-  { name: "Antique Finish Bracelet", price: "₹ 31,000", original: "₹ 34,000", save: "₹ 3,000", exclusive: true, badge: null, image: "https://images.unsplash.com/photo-1596944925780-2e1d969b2a8c?w=400&q=80" },
-  { name: "Chain Link Bracelet", price: "₹ 15,750", original: null, save: null, exclusive: false, badge: null, image: "https://images.unsplash.com/photo-1611652022419-a9419f74343a?w=400&q=80" },
-  { name: "Gemstone Bracelet", price: "₹ 29,999", original: "₹ 33,000", save: "₹ 3,001", exclusive: false, badge: "NEW", image: "https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" },
-  { name: "Twisted Gold Bracelet", price: "₹ 20,250", original: null, save: null, exclusive: true, badge: null, image: "https://images.unsplash.com/photo-1515562141207-7a888e73e82f?w=400&q=80" },
+  { name: "Floral Gold Plated Bracelet", price: "₹ 21,999", original: "₹ 25,000", save: "₹ 3,000", exclusive: true, badge: "NEW", image: ring },
+  { name: "Classic Gold Bangle Set", price: "₹ 18,500", original: null, save: null, exclusive: false, badge: null, image: ring },
+  { name: "Designer Kada Bracelet", price: "₹ 32,000", original: "₹ 35,000", save: "₹ 3,000", exclusive: true, badge: null, image: ring },
+  { name: "Elegant Pearl Bracelet", price: "₹ 14,999", original: null, save: null, exclusive: false, badge: "NEW", image: ring },
+  { name: "Artistic Gold Bracelet", price: "₹ 27,500", original: "₹ 30,000", save: "₹ 2,500", exclusive: false, badge: null, image: ring },
+  { name: "Traditional Bangle Pair", price: "₹ 22,000", original: null, save: null, exclusive: true, badge: null, image: ring },
+  { name: "Contemporary Cuff Bracelet", price: "₹ 19,999", original: "₹ 24,000", save: "₹ 4,001", exclusive: false, badge: "NEW", image: ring },
+  { name: "Minimalist Gold Bracelet", price: "₹ 16,500", original: null, save: null, exclusive: false, badge: null, image: ring },
+  { name: "Statement Gold Bracelet", price: "₹ 45,000", original: "₹ 50,000", save: "₹ 5,000", exclusive: true, badge: null, image: ring },
+  { name: "Pearl & Gold Bracelet", price: "₹ 28,750", original: null, save: null, exclusive: false, badge: "NEW", image: ring },
+  { name: "Tennis Bracelet Style", price: "₹ 38,000", original: "₹ 42,000", save: "₹ 4,000", exclusive: false, badge: null, image: ring },
+  { name: "Oxidised Silver Bracelet", price: "₹ 12,999", original: null, save: null, exclusive: true, badge: null, image: ring },
+  { name: "Bridal Gold Bracelet", price: "₹ 52,000", original: "₹ 58,000", save: "₹ 6,000", exclusive: false, badge: "NEW", image: ring },
+  { name: "Diamond Line Bracelet", price: "₹ 65,000", original: null, save: null, exclusive: true, badge: null, image: ring },
+  { name: "Rose Gold Bangle", price: "₹ 24,500", original: "₹ 27,000", save: "₹ 2,500", exclusive: false, badge: null, image: ring },
+  { name: "Kids Charm Bracelet", price: "₹ 8,999", original: null, save: null, exclusive: false, badge: "NEW", image: ring },
+  { name: "Antique Finish Bracelet", price: "₹ 31,000", original: "₹ 34,000", save: "₹ 3,000", exclusive: true, badge: null, image: ring },
+  { name: "Chain Link Bracelet", price: "₹ 15,750", original: null, save: null, exclusive: false, badge: null, image: ring },
+  { name: "Gemstone Bracelet", price: "₹ 29,999", original: "₹ 33,000", save: "₹ 3,001", exclusive: false, badge: "NEW", image: ring },
+  { name: "Twisted Gold Bracelet", price: "₹ 20,250", original: null, save: null, exclusive: true, badge: null, image: ring },
 ];
 
 const FOOTER_COLUMNS = [
@@ -72,105 +72,6 @@ const FOOTER_COLUMNS = [
   { heading: "CUSTOMER SERVICE", links: ["Contact Us", "FAQ", "Shipping", "Returns"] },
   { heading: "Our Stores", links: [], address: "123 Jewellery Lane, City", phone: "+91 98765 43210", email: "hello@corazor.com" },
 ];
-
-const HeaderTopBar = () => (
-  <div
-    className="flex items-center justify-between text-white"
-    style={{
-      height: "40px",
-      backgroundColor: "#6A2E8D",
-      paddingLeft: "35px",
-      paddingRight: "35px",
-      fontSize: "14px",
-      fontWeight: 400,
-      lineHeight: 1.2,
-    }}
-  >
-    <div className="flex items-center gap-[22px]">
-      {TOP_LINKS_LEFT.map((label) => (
-        <a key={label} href={`#${label}`} className="text-white hover:opacity-90 transition-opacity">
-          {label}
-        </a>
-      ))}
-    </div>
-    <div className="flex items-center gap-[30px]">
-      {TOP_LINKS_RIGHT.map(({ icon: Icon, label }) => (
-        <a key={label} href={`#${label}`} className="flex flex-col items-center gap-0.5 text-white hover:opacity-90 transition-opacity">
-          <Icon className="w-5 h-5" style={{ flexShrink: 0 }} />
-          <span style={{ fontSize: "10px", lineHeight: 1.2 }}>{label}</span>
-        </a>
-      ))}
-    </div>
-  </div>
-);
-
-const HeaderMain = () => (
-  <div
-    className="flex items-center justify-between bg-white"
-    style={{
-      height: "80px",
-      paddingLeft: "35px",
-      paddingRight: "35px",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-    }}
-  >
-    <div className="w-24 h-8 bg-[#6A2E8D] rounded" aria-hidden />
-    <div className="flex-1 flex justify-center px-8 max-w-[520px]">
-      <div
-        className="flex items-center w-full rounded-[20px] border border-[#E0E0E0]"
-        style={{ height: "40px", backgroundColor: "#F5F5F5" }}
-      >
-        <SearchIcon className="w-5 h-5 flex-shrink-0 ml-4 text-[#888888]" />
-        <input
-          type="search"
-          placeholder="Search for products..."
-          className="flex-1 min-w-0 bg-transparent border-0 outline-none ml-3 mr-4 text-[#333333] placeholder-[#888888]"
-          style={{ fontSize: "14px" }}
-        />
-      </div>
-    </div>
-    <div className="flex items-center gap-[30px]">
-      <button type="button" className="flex flex-col items-center gap-0.5 text-[#333333] hover:opacity-80 transition-opacity" aria-label="Wishlist">
-        <HeartIcon className="w-6 h-6" />
-        <span style={{ fontSize: "12px" }}>Wishlist</span>
-      </button>
-      <button type="button" className="relative flex flex-col items-center gap-0.5 text-[#333333] hover:opacity-80 transition-opacity" aria-label="Cart">
-        <BagIcon className="w-6 h-6" />
-        <span className="absolute -top-1 right-1 flex items-center justify-center rounded-full bg-[#6A2E8D] text-white" style={{ width: "12px", height: "12px", fontSize: "10px" }}>1</span>
-        <span style={{ fontSize: "12px" }}>Cart</span>
-      </button>
-      <button type="button" className="flex flex-col items-center gap-0.5 text-[#333333] hover:opacity-80 transition-opacity" aria-label="Account">
-        <UserIcon className="w-6 h-6" />
-        <span style={{ fontSize: "12px" }}>Account</span>
-      </button>
-    </div>
-  </div>
-);
-
-const HeaderNav = () => (
-  <nav
-    className="flex items-center overflow-x-auto"
-    style={{
-      height: "50px",
-      backgroundColor: "#6A2E8D",
-      paddingLeft: "35px",
-      paddingRight: "35px",
-      gap: "25px",
-    }}
-    aria-label="Categories"
-  >
-    {CATEGORIES.map((label) => (
-      <a
-        key={label}
-        href={`#${label}`}
-        className="flex-shrink-0 text-white hover:bg-white/15 transition-colors flex items-center"
-        style={{ fontSize: "14px", fontWeight: 400, padding: "0 15px", lineHeight: "50px" }}
-      >
-        {label}
-      </a>
-    ))}
-  </nav>
-);
 
 const BreadcrumbBar = () => (
   <div

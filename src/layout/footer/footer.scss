@@ -1,18 +1,14 @@
-/* Footer - pixel-perfect match to design */
-/* Colors: bg #F8F2FB, headers #333333, links #6A6A6A, email #D54490, purple #5C258D, border #D8BFD8, gradient #E0BBE4 → #8A2BE2 */
-
 .footer {
   position: relative;
-  background: #F8F2FB;
-  font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  background-color: rgb(246, 239, 246);
   padding: 48px 0 32px;
   margin-top: 0;
 }
 
 .footer__inner {
-  max-width: 1900px;
+  max-width: 1362px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 28px 40px;
   box-sizing: border-box;
 }
 
@@ -26,35 +22,29 @@
 }
 
 .footer__col-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #333333;
+  font-family: var(--font-semiBold);
+  font-size: var(--text-base);
+  color: var(--primary-color-a);
   margin: 0 0 16px 0;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
 }
 
 .footer__list {
-  list-style: none;
   margin: 0;
-  padding: 0;
+
+  li,
+  p,
+  a {
+    font-family: var(--font-regular);
+    color: var(--primary-color-c);
+    font-size: var(--text-base);
+    margin-bottom: 10px;
+  }
+
+  & li:last-child {
+    margin-bottom: 0;
+  }
 }
 
-.footer__list li {
-  margin-bottom: 10px;
-}
-
-.footer__list li:last-child {
-  margin-bottom: 0;
-}
-
-.footer__link {
-  font-size: 13px;
-  color: #6A6A6A;
-  text-decoration: none;
-  line-height: 1.5;
-  transition: color 0.15s ease;
-}
 
 .footer__link:hover {
   color: #333333;
@@ -76,13 +66,12 @@
   margin-top: 0;
 }
 
-.footer__support-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: #333333;
+.footer__support-title,
+.footer__list-mainItem {
+  font-family: var(--font-semiBold);
+  font-size: var(--text-base);
+  color: var(--primary-color-c);
   margin: 0 0 10px 0;
-  letter-spacing: 0.04em;
-  line-height: 1.4;
 }
 
 .footer__emails {
@@ -121,18 +110,11 @@
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  background: #5C258D;
-  color: #ffffff;
+  color: var(--primary-color-a);
   text-decoration: none;
   font-size: 10px;
   font-weight: 600;
   gap: 4px;
-  transition: background 0.2s ease, transform 0.15s ease;
-}
-
-.footer__icon-btn:hover {
-  background: #4a1d70;
-  color: #ffffff;
 }
 
 .footer__icon-btn svg {
@@ -174,29 +156,24 @@
 }
 
 .footer__app-box {
-  flex: 1;
-  min-width: 320px;
-  max-width: 1970px;
   padding: 28px 32px;
   border-radius: 12px;
-  background: linear-gradient(90deg, #E0BBE4 0%, #8A2BE2 100%);
+  background: linear-gradient(303.1deg, rgb(223, 198, 255) 24.89%, rgb(248, 243, 255) 88.2%);
   box-sizing: border-box;
 }
 
 .footer__app-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #ffffff;
+  font-family: var(--font-semiBold);
+  font-size: var(--text-lg);
+  color: var(--primary-color-a);
   margin: 0 0 8px 0;
-  letter-spacing: 0.02em;
-  line-height: 1.3;
 }
 
 .footer__app-sub {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.95);
+  font-family: var(--font-regular);
+  font-size: var(--text-xs);
+  color: var(--primary-color-a);
   margin: 0 0 20px 0;
-  line-height: 1.45;
 }
 
 .footer__app-buttons {
@@ -232,16 +209,21 @@
 .footer__social-block {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 14px;
-  min-width: 200px;
+  align-items: flex-start;
 }
 
 .footer__find-us {
-  font-size: 13px;
-  color: #6A6A6A;
+  font-family: var(--font-semiBold);
+  font-size: var(--text-base);
+  color: var(--primary-color-a);
   margin: 0;
-  font-weight: 500;
+}
+
+.footer__social-block-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .footer__social-icons {
@@ -276,10 +258,9 @@
 }
 
 .footer__payment-logo {
-  font-size: 11px;
-  font-weight: 600;
-  color: #6A6A6A;
-  letter-spacing: 0.02em;
+  font-family: var(--font-semiBold);
+  font-size: var(--text-lg);
+  color: var(--primary-color-a);
 }
 
 /* ----- Link sections: single column, pipe-separated (white bg) ----- */
@@ -454,8 +435,9 @@
   }
 
   .footer__col-title {
-    font-size: 13px;
+    font-size: var(--text-sm);
     margin-bottom: 12px;
+    color: var(--primary-color-c);
   }
 
   .footer__link,

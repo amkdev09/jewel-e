@@ -65,43 +65,12 @@ const Footer = () => {
           </div>
           <div className="footer__col footer__col--contact">
             <h3 className="footer__col-title">Contact Us</h3>
-            <div className="footer__address">
-              <p>CaratLane Trading Pvt Ltd</p>
+            <div className="footer__list">
+              <p className="footer__list-mainItem">CaratLane Trading Pvt Ltd</p>
               <p>6th Floor, Olympia Cyberspace,</p>
               <p>Arulayiammanpet, SIDCO Industrial Estate,</p>
               <p>Guindy, Chennai,</p>
               <p>Tamil Nadu 600032</p>
-            </div>
-            <div className="footer__support">
-              <h4 className="footer__support-title">24X7 ENQUIRY SUPPORT (ALL DAYS)</h4>
-              <div className="footer__emails">
-                <p>General: <a href="mailto:contactus@caratlane.com" className={emailClass}>contactus@caratlane.com</a></p>
-                <p>Corporate: <a href="mailto:b2b@caratlane.com" className={emailClass}>b2b@caratlane.com</a></p>
-                <p>Hr: <a href="mailto:careers@caratlane.com" className={emailClass}>careers@caratlane.com</a></p>
-                <p>Grievance: <a href="#" className={emailClass}>click here</a></p>
-              </div>
-              <div className="footer__contact-icons">
-                <a href="#" className="footer__icon-btn" aria-label="Call Us">
-                  <PhoneIcon />
-                  <span>Call Us</span>
-                </a>
-                <a href="#" className="footer__icon-btn" aria-label="Chat">
-                  <ChatIcon />
-                  <span>Chat</span>
-                </a>
-                <a href="#" className="footer__icon-btn" aria-label="Whatsapp">
-                  <WhatsappIcon />
-                  <span>Whatsapp</span>
-                </a>
-                <a href="#" className="footer__icon-btn" aria-label="Email">
-                  <EmailIcon />
-                  <span>Email</span>
-                </a>
-              </div>
-              <a href="#" className="footer__find-store">
-                <StoreIcon />
-                <span>FIND A STORE</span>
-              </a>
             </div>
           </div>
         </div>
@@ -122,8 +91,41 @@ const Footer = () => {
               </a>
             </div>
           </div>
-          <div className="footer__social-block">
-            <p className="footer__find-us">Find Us On</p>
+          <div className="footer__support">
+            <h4 className="footer__support-title">24X7 ENQUIRY SUPPORT (ALL DAYS)</h4>
+            <div className="footer__emails">
+              <p>General: <a href="mailto:contactus@caratlane.com" className={emailClass}>contactus@caratlane.com</a></p>
+              <p>Corporate: <a href="mailto:b2b@caratlane.com" className={emailClass}>b2b@caratlane.com</a></p>
+              <p>Hr: <a href="mailto:careers@caratlane.com" className={emailClass}>careers@caratlane.com</a></p>
+              <p>Grievance: <a href="#" className={emailClass}>click here</a></p>
+            </div>
+            <div className="footer__contact-icons">
+              <a href="#" className="footer__icon-btn" aria-label="Call Us">
+                <PhoneIcon />
+                <span>Call Us</span>
+              </a>
+              <a href="#" className="footer__icon-btn" aria-label="Chat">
+                <ChatIcon />
+                <span>Chat</span>
+              </a>
+              <a href="#" className="footer__icon-btn" aria-label="Whatsapp">
+                <WhatsappIcon />
+                <span>Whatsapp</span>
+              </a>
+              <a href="#" className="footer__icon-btn" aria-label="Email">
+                <EmailIcon />
+                <span>Email</span>
+              </a>
+            </div>
+            <a href="#" className="footer__find-store">
+              <StoreIcon />
+              <span>FIND A STORE</span>
+            </a>
+          </div>
+        </div>
+        <div className="footer__social-block">
+          <p className="footer__find-us">Find Us On</p>
+          <div className="w-full footer__social-block-inner">
             <div className="footer__social-icons">
               <a href="#" className="footer__social-icon" aria-label="Instagram"><InstagramIcon /></a>
               <a href="#" className="footer__social-icon" aria-label="Facebook"><FacebookIcon /></a>
@@ -140,6 +142,7 @@ const Footer = () => {
             </div>
           </div>
         </div>
+
 
         {/* Link sections: single column, pipe-separated links */}
       </div>
