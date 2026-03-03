@@ -20,7 +20,22 @@ export const commonRouters = [
     path: "/jewellery",
     component: asyncComponent(() => import("../pages/main/jewellery.jsx")),
     isHeader: true,
-  }
+  },
+  {
+    path: "/treasure",
+    component: asyncComponent(() => import("../pages/main/TreasurePage.jsx")),
+    isHeader: true,
+  },
+  {
+    path: "/gold",
+    component: asyncComponent(() => import("../pages/main/Gold.jsx")),
+    isHeader: true,
+  },
+  {
+    path: "/stores",
+    component: asyncComponent(() => import("../pages/main/Stores.jsx")),
+    isHeader: true,
+  },
 ];
 
 export const protectedRouters = [

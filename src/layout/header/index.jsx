@@ -238,6 +238,7 @@ const Header = () => {
                     </form>
                     {/* Center action buttons - hidden on small */}
                     <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+                        <Link to={'/treasure'}>
                         <button
                             type="button"
                             className="css-1fs27mr border border-solid border-[#DE57E5] bg-[#F8EBFB]"
@@ -252,6 +253,8 @@ const Header = () => {
                                 NEW
                             </span>
                         </button>
+                        </Link>'
+                        <Link to={'/stores'}>
                         <button
                             type="button"
                             className="rounded-[12px]"
@@ -267,6 +270,8 @@ const Header = () => {
                                 <span className="text-sm font-inter-semibold text-[#FF5B6C]">Stores</span>
                             </span>
                         </button>
+                        </Link>
+                        <Link to={"/gold"}>
                         <button
                             type="button"
                             className="css-1fs27mr border border-solid border-[#B08700] bg-[#FFF6D8]"
@@ -276,6 +281,7 @@ const Header = () => {
                                 <span className="text-sm font-inter-semibold text-[#B08700]">Gold</span>
                             </span>
                         </button>
+                        </Link>
                     </div>
                 </div>
 
