@@ -277,24 +277,23 @@
 }
 
 .footer__link-header {
-  font-size: 1.215rem;
+  font-family: var(--font-regular);
+  font-size: var(--text-lg);
   color: #333333;
   margin-bottom: 2rem;
-  line-height: 1.35;
 }
 
 .footer__link-subheader {
-  font-size: 0.915rem;
-  font-weight: 600;
+  font-family: var(--font-semiBold);
+  font-size: var(--text-base);
   color: rgb(136, 99, 251);
   margin-bottom: 0.2rem;
-  line-height: 1.35;
 }
 
 .footer__link-list {
-  font-size: 13px;
+  font-family: var(--font-regular);
+  font-size: var(--text-sm);
   color: #333333;
-  line-height: 1.6;
   margin-bottom: 16px;
 }
 
@@ -470,5 +469,50 @@
 @media (max-width: 480px) {
   .footer__top {
     grid-template-columns: 1fr;
+  }
+}
+
+.m-bnavigation {
+  a {
+    position: relative;
+
+    span {
+      position: relative;
+      padding-left: 22px;
+      display: inline-block;
+    }
+  }
+
+  a:nth-child(1) span::before {
+    content: "";
+    position: absolute;
+    background: url(https://assets.cltstatic.com/images/responsive/common-sprite.png?v2.0) -60px -309px / 600px no-repeat;
+    width: 16px;
+    height: 16px;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  a:nth-child(2) span::before {
+    content: "";
+    position: absolute;
+    background: url(https://assets.cltstatic.com/images/responsive/common-sprite.png?v2.0) -62px -334px / 600px no-repeat;
+    width: 16px;
+    height: 16px;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  a:nth-child(3) span::before {
+    content: "";
+    position: absolute;
+    background: url(https://assets.cltstatic.com/images/responsive/common-sprite.png?v2.0) -86px -310px / 600px no-repeat;
+    width: 16px;
+    height: 16px;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }

@@ -70,3 +70,41 @@
     height: 14px;
     display: block;
 }
+
+.css-qu12nd {
+    border: 1px solid rgb(136, 99, 251);
+    border-radius: 8px;
+    background-color: rgb(235, 235, 255);
+    padding: 4px 4px 6px 6px;
+    color: rgb(79, 50, 103);
+    font-family: "InterSemiBold", 'NotoSansDevanagariSemiBold', "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position: relative;
+    left: 0;
+    min-width: 45px;
+
+    &::after {
+        content: "";
+        width: 0px;
+        height: 0px;
+        position: absolute;
+        top: 12px;
+        right: -4px;
+        z-index: 2;
+        border-style: solid;
+        border-color: rgb(136, 99, 251);
+        border-image: initial;
+        background-color: rgb(235, 235, 255);
+        border-width: 0px 1px 1px 0px;
+        display: inline-block;
+        padding: 0.2em;
+        transform: rotate(-45deg);
+    }
+}
+
+.stores-lic {
+    background: url(https://assets.cltstatic.com/images/responsive/spriteImage1.png?v2.0) -539px -1459px / 832px;
+    width: 18px;
+    height: 18px;
+    margin-top: 15px;
+    transform: translateY(-50%);
+}

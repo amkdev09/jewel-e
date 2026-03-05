@@ -2,14 +2,9 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./header.scss";
 import { PiStorefront } from "react-icons/pi";
+import { IoIosSearch } from "react-icons/io";
 
 const ring = "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-
-const SearchIcon = () => (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-);
 
 const ChevronDownIcon = () => (
     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +225,7 @@ const Header = () => {
                                 style={{ background: "linear-gradient(to right, #e56eeb, #8863fb)" }}
                                 aria-label="Submit search"
                             >
-                                <SearchIcon />
+                                <IoIosSearch />
                             </button>
                         </div>
                     </form>

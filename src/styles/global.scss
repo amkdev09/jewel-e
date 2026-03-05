@@ -17,6 +17,32 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Hide scrollbars on mobile but keep scrolling */
+@media (max-width: 720px) {
+    body {
+        /* Firefox */
+        scrollbar-width: none;
+        /* IE / old Edge */
+        -ms-overflow-style: none;
+    }
+
+    body::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Ensure all inner scrollable elements also hide scrollbars */
+    * {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none;
+    }
+
+    *::-webkit-scrollbar {
+        width: 0 !important;
+        height: 0 !important;
+        display: none !important;
+    }
+}
+
 img {
     height: 100%;
     width: 100%;
@@ -52,6 +78,10 @@ select:-webkit-autofill:active {
     &::-webkit-scrollbar {
         width: 14px;
         height: 14px;
+
+        @media (max-width: 720px) {
+            display: none;
+        }
     }
 
     &::-webkit-scrollbar-track {

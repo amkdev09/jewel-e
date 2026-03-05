@@ -1,0 +1,76 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { IoMdSearch } from "react-icons/io";
+import avatar from "../../assets/images/avatar.png";
+import { CgMenuLeftAlt } from "react-icons/cg";
+
+const MobileHeader = () => {
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white">
+      <div className="flex items-center justify-between px-4 pt-3 pb-2">
+        {/* Left: menu + avatar */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            aria-label="Open navigation menu"
+            className="flex flex-col justify-center gap-[3px]"
+          >
+            <CgMenuLeftAlt style={{ color: "var(--primary-color-a)", fontSize: 24, }} />
+          </button>
+
+          <button
+            type="button"
+            aria-label="Account"
+            className="w-8 h-8 rounded-full flex items-center bg-[var(--color-pink)] justify-center shadow-sm"
+          >
+            <figure className="w-7 h-7 rounded-full overflow-hidden object-cover bg-[#ffdee4]">
+              <img src={avatar} alt="avatar" />
+            </figure>
+          </button>
+        </div>
+
+        {/* Right icons */}
+        <div className="flex items-center gap-3">
+          <Link
+            to="/stores"
+            className="inline-flex items-center gap-2"
+          >
+            <span className="css-qu12nd text-sm">Stores</span>
+            <div className="stores-lic" />
+          </Link>
+
+          <button type="button" className="p-1 text-[#5b2c6f] transition-colors duration-200 hover:opacity-70" aria-label="Wishlist">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -960 960 960" style={{ fill: "#4f3267" }}>
+              <path d="M480-147q-14 0-28.5-5T426-168l-69-63q-106-97-191.5-192.5T80-634q0-94 63-157t157-63q53 0 100 22.5t80 61.5q33-39 80-61.5T660-854q94 0 157 63t63 157q0 115-85 211T602-230l-68 62q-11 11-25.5 16t-28.5 5"></path>
+            </svg>
+          </button>
+          <button className="links css-dpoqzr" aria-labelledby="takestocart" name="cartlink">
+            <span className="css-133bxhf">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#4F3267" viewBox="0 -960 960 960" style={{ color: "#4f3267" }}>
+                <path d="M240-80q-33 0-56.5-23.5T160-160v-480q0-33 23.5-56.5T240-720h80q0-66 47-113t113-47 113 47 47 113h80q33 0 56.5 23.5T800-640v480q0 33-23.5 56.5T720-80zm160-640h160q0-33-23.5-56.5T480-800t-56.5 23.5T400-720m200 200q17 0 28.5-11.5T640-560v-80h-80v80q0 17 11.5 28.5T600-520m-240 0q17 0 28.5-11.5T400-560v-80h-80v80q0 17 11.5 28.5T360-520"></path>
+              </svg>
+              <span className="css-16zwby6">+</span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Search bar */}
+      <div className="px-4 pb-3">
+        <form className="flex items-center h-[40px] flex-1 justify-center" role="search">
+          <div className="flex items-center gap-2 w-full h-full rounded-[11px] bg-white overflow-hidden border-1 border-[#e56eeb] px-3">
+            <IoMdSearch style={{ color: "var(--primary-color-a)", fontSize: 24, strokeWidth: 4 }} />
+            <input
+              type="search"
+              placeholder="Search"
+              className="flex-1 text-sm text-[#333] placeholder-[var(--primary-color-a)] font-inter-semibold outline-none bg-transparent"
+              aria-label="Search"
+            />
+          </div>
+        </form>
+      </div>
+    </header>
+  );
+};
+
+export default MobileHeader;

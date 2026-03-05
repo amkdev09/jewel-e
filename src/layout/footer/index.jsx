@@ -147,7 +147,7 @@ const Footer = () => {
         {/* Link sections: single column, pipe-separated links */}
       </div>
       <div className="footer__links-wrap">
-        <div className="max-w-[1080px] mx-auto">
+        <div className="max-w-[1195px] mx-auto px-5">
           <h4 className="footer__link-header">Popular Searches</h4>
           <FooterLinkSection title="Gifts" links={["Gifts For Men", "Christmas Gifts", "Gifts Under 10000", "Gifts Under 30000", "Gifts Under 50000", "CaratLane Gift Cards", "Birthday Gifts", "Anniversary Gifts", "Romantic Gifts", "Gifts For Kids", "Gifts For Sister", "Gifts For Mom", "Gifts For Girlfriend", "International Gifting", "Gifts For Wife", "Pendant Gift", "Bracelet Gifts", "Wedding Gifts", "Ring Gifts", "BKT Gold Gifts", "Silver Diamond Gifts"]} />
           <FooterLinkSection title="CaratLane Exclusives" links={["New Arrivals", "Self Gifting", "Postcards", "Digital Gold", "Gold Savings Scheme", "Store Locator", "Designathon"]} />
@@ -183,11 +183,6 @@ const Footer = () => {
           </div>
         </div>
       </div>
-
-      {/* Floating call button */}
-      <a href="tel:" className="footer__float-call" aria-label="Call">
-        <PhoneIcon />
-      </a>
     </footer>
   );
 };
