@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const MobileBNavigation = () => {
   return (
     <nav className="w-full bg-[#4f3267] fixed bottom-0 left-0 right-0 z-50">
-      <div className="m-bnavigation flex items-center justify-around px-2 py-4 text-white font-inter-semibold text-xs">
+      <div className="m-bnavigation flex items-center justify-around px-2 py-4 text-white font-inter-semibold text-sm">
         <Link
           to="/jewellery"
         >
