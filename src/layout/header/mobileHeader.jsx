@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { IoMdSearch } from "react-icons/io";
 import avatar from "../../assets/images/avatar.png";
 import { CgMenuLeftAlt } from "react-icons/cg";
@@ -9,6 +9,7 @@ const MobileHeader = () => {
   const headerBarRef = useRef(null);
   const lastScrollY = useRef(0);
   const isCollapsed = useRef(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const headerBar = headerBarRef.current;
@@ -66,6 +67,7 @@ const MobileHeader = () => {
           </button>
 
           <button
+            onClick={() => navigate("/")}
             type="button"
             aria-label="Account"
             className="w-8 h-8 rounded-full flex items-center bg-[var(--color-pink)] justify-center shadow-sm"

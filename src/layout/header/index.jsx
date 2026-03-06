@@ -210,6 +210,7 @@ const Header = () => {
                 {/* Left */}
                 <div className="flex items-center gap-5 min-w-0 w-[72%]">
                     <button
+                        onClick={() => navigate("/")}
                         type="button"
                         aria-label="Account"
                         className="w-8 h-8 rounded-full flex items-center bg-[var(--color-pink)] justify-center shadow-sm"
