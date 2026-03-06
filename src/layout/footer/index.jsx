@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "./footer.scss";
 
 const FooterLinkSection = ({ title, links }) => (
@@ -20,60 +20,160 @@ const Footer = () => {
   const linkClass = "footer__link";
   const emailClass = "footer__email-link";
 
+  const [openAccordion, setOpenAccordion] = useState({});
+
+  const toggleAccordion = (key) => {
+    setOpenAccordion((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const accordionKeys = ["know-your-jewellery", "caratlane-advantage", "customer-service", "about-us", "contact-us"];
+
   return (
     <footer className="footer">
       <div className="footer__inner">
-        {/* Top section: 5 columns */}
-        <div className="footer__top">
-          <div className="footer__col">
-            <h3 className="footer__col-title">Know Your Jewellery</h3>
-            <ul className="footer__list">
-              <li><a href="#" className={linkClass}>Diamond guide</a></li>
-              <li><a href="#" className={linkClass}>Jewellery guide</a></li>
-              <li><a href="#" className={linkClass}>Gemstones guide</a></li>
-              <li><a href="#" className={linkClass}>Gold rate</a></li>
-              <li><a href="#" className={linkClass}>Treasure chest</a></li>
-              <li><a href="#" className={linkClass}>Glossary</a></li>
-            </ul>
-          </div>
-          <div className="footer__col">
-            <h3 className="footer__col-title">CaratLane Advantage</h3>
-            <ul className="footer__list">
-              <li><a href="#" className={linkClass}>15-day returns</a></li>
-              <li><a href="#" className={linkClass}>Free shipping</a></li>
-              <li><a href="#" className={linkClass}>Postcards</a></li>
-              <li><a href="#" className={linkClass}>Gold exchange</a></li>
-              <li><a href="#" className={linkClass}>Gift cards</a></li>
-              <li><a href="#" className={linkClass}>Digital gold</a></li>
-            </ul>
-          </div>
-          <div className="footer__col">
-            <h3 className="footer__col-title">Customer Service</h3>
-            <ul className="footer__list">
-              <li><a href="#" className={linkClass}>Return policy</a></li>
-              <li><a href="#" className={linkClass}>Order status</a></li>
-            </ul>
-          </div>
-          <div className="footer__col">
-            <h3 className="footer__col-title">About Us</h3>
-            <ul className="footer__list">
-              <li><a href="#" className={linkClass}>Our story</a></li>
-              <li><a href="#" className={linkClass}>Press</a></li>
-              <li><a href="#" className={linkClass}>Blog</a></li>
-              <li><a href="#" className={linkClass}>Careers</a></li>
-            </ul>
-          </div>
-          <div className="footer__col footer__col--contact">
-            <h3 className="footer__col-title">Contact Us</h3>
-            <div className="footer__list">
-              <p className="footer__list-mainItem">CaratLane Trading Pvt Ltd</p>
-              <p>6th Floor, Olympia Cyberspace,</p>
-              <p>Arulayiammanpet, SIDCO Industrial Estate,</p>
-              <p>Guindy, Chennai,</p>
-              <p>Tamil Nadu 600032</p>
+        {/* Top section: 5 columns (accordion on mobile) */}
+        <ul className="footer__top">
+          <li className="footer__col footer__accordion-item">
+            <button
+              type="button"
+              className="footer__accordion-header"
+              onClick={() => toggleAccordion(accordionKeys[0])}
+              aria-expanded={!!openAccordion[accordionKeys[0]]}
+              aria-controls={accordionKeys[0]}
+            >
+              <h3 className="footer__col-title">Know Your Jewellery</h3>
+              <span className="footer__accordion-icon" aria-hidden="true">
+                {openAccordion[accordionKeys[0]] ? "−" : "+"}
+              </span>
+            </button>
+            <div id={accordionKeys[0]} className={`footer__accordion-content ${openAccordion[accordionKeys[0]] ? "footer__accordion-content--open" : ""}`}>
+              <ul className="footer__list">
+                <li><a href="#" className={linkClass}>Diamond guide</a></li>
+                <li><a href="#" className={linkClass}>Jewellery guide</a></li>
+                <li><a href="#" className={linkClass}>Gemstones guide</a></li>
+                <li><a href="#" className={linkClass}>Gold rate</a></li>
+                <li><a href="#" className={linkClass}>Treasure chest</a></li>
+                <li><a href="#" className={linkClass}>Glossary</a></li>
+              </ul>
             </div>
-          </div>
-        </div>
+          </li>
+          <li className="footer__col footer__accordion-item">
+            <button
+              type="button"
+              className="footer__accordion-header"
+              onClick={() => toggleAccordion(accordionKeys[1])}
+              aria-expanded={!!openAccordion[accordionKeys[1]]}
+              aria-controls={accordionKeys[1]}
+            >
+              <h3 className="footer__col-title">CaratLane Advantage</h3>
+              <span className="footer__accordion-icon" aria-hidden="true">
+                {openAccordion[accordionKeys[1]] ? "−" : "+"}
+              </span>
+            </button>
+            <div id={accordionKeys[1]} className={`footer__accordion-content ${openAccordion[accordionKeys[1]] ? "footer__accordion-content--open" : ""}`}>
+              <ul className="footer__list">
+                <li><a href="#" className={linkClass}>15-day returns</a></li>
+                <li><a href="#" className={linkClass}>Free shipping</a></li>
+                <li><a href="#" className={linkClass}>Postcards</a></li>
+                <li><a href="#" className={linkClass}>Gold exchange</a></li>
+                <li><a href="#" className={linkClass}>Gift cards</a></li>
+                <li><a href="#" className={linkClass}>Digital gold</a></li>
+              </ul>
+            </div>
+          </li>
+          <li className="footer__col footer__accordion-item">
+            <button
+              type="button"
+              className="footer__accordion-header"
+              onClick={() => toggleAccordion(accordionKeys[2])}
+              aria-expanded={!!openAccordion[accordionKeys[2]]}
+              aria-controls={accordionKeys[2]}
+            >
+              <h3 className="footer__col-title">Customer Service</h3>
+              <span className="footer__accordion-icon" aria-hidden="true">
+                {openAccordion[accordionKeys[2]] ? "−" : "+"}
+              </span>
+            </button>
+            <div id={accordionKeys[2]} className={`footer__accordion-content ${openAccordion[accordionKeys[2]] ? "footer__accordion-content--open" : ""}`}>
+              <ul className="footer__list">
+                <li><a href="#" className={linkClass}>Return policy</a></li>
+                <li><a href="#" className={linkClass}>Order status</a></li>
+              </ul>
+            </div>
+          </li>
+          <li className="footer__col footer__accordion-item">
+            <button
+              type="button"
+              className="footer__accordion-header"
+              onClick={() => toggleAccordion(accordionKeys[3])}
+              aria-expanded={!!openAccordion[accordionKeys[3]]}
+              aria-controls={accordionKeys[3]}
+            >
+              <h3 className="footer__col-title">About Us</h3>
+              <span className="footer__accordion-icon" aria-hidden="true">
+                {openAccordion[accordionKeys[3]] ? "−" : "+"}
+              </span>
+            </button>
+            <div id={accordionKeys[3]} className={`footer__accordion-content ${openAccordion[accordionKeys[3]] ? "footer__accordion-content--open" : ""}`}>
+              <ul className="footer__list">
+                <li><a href="#" className={linkClass}>Our story</a></li>
+                <li><a href="#" className={linkClass}>Press</a></li>
+                <li><a href="#" className={linkClass}>Blog</a></li>
+                <li><a href="#" className={linkClass}>Careers</a></li>
+              </ul>
+            </div>
+          </li>
+          <li className="footer__col footer__col--contact footer__accordion-item">
+            <button
+              type="button"
+              className="footer__accordion-header"
+              onClick={() => toggleAccordion(accordionKeys[4])}
+              aria-expanded={!!openAccordion[accordionKeys[4]]}
+              aria-controls={accordionKeys[4]}
+            >
+              <h3 className="footer__col-title">Contact Us</h3>
+              <span className="footer__accordion-icon" aria-hidden="true">
+                {openAccordion[accordionKeys[4]] ? "−" : "+"}
+              </span>
+            </button>
+            <div id={accordionKeys[4]} className={`footer__accordion-content ${openAccordion[accordionKeys[4]] ? "footer__accordion-content--open" : ""}`}>
+              <div className="footer__list">
+                <p className="footer__list-mainItem">CaratLane Trading Pvt Ltd</p>
+                <p>6th Floor, Olympia Cyberspace,</p>
+                <p>Arulayiammanpet, SIDCO Industrial Estate,</p>
+                <p>Guindy, Chennai,</p>
+                <p>Tamil Nadu 600032</p>
+              </div>
+              <div className="footer__support">
+                <h4 className="footer__support-title">24X7 ENQUIRY SUPPORT (ALL DAYS)</h4>
+                <div className="footer__emails">
+                  <p>General: <a href="mailto:contactus@caratlane.com" className={emailClass}>contactus@caratlane.com</a></p>
+                  <p>Corporate: <a href="mailto:b2b@caratlane.com" className={emailClass}>b2b@caratlane.com</a></p>
+                  <p>Hr: <a href="mailto:careers@caratlane.com" className={emailClass}>careers@caratlane.com</a></p>
+                  <p>Grievance: <a href="#" className={emailClass}>click here</a></p>
+                </div>
+                <div className="footer__contact-icons">
+                  <a href="#" className="footer__icon-btn" aria-label="Call Us">
+                    <PhoneIcon />
+                    <span>Call Us</span>
+                  </a>
+                  <a href="#" className="footer__icon-btn" aria-label="Chat">
+                    <ChatIcon />
+                    <span>Chat</span>
+                  </a>
+                  <a href="#" className="footer__icon-btn" aria-label="Whatsapp">
+                    <WhatsappIcon />
+                    <span>Whatsapp</span>
+                  </a>
+                  <a href="#" className="footer__icon-btn" aria-label="Email">
+                    <EmailIcon />
+                    <span>Email</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
 
         {/* Middle section: App download + Find Us On */}
         <div className="footer__middle">
@@ -91,49 +191,25 @@ const Footer = () => {
               </a>
             </div>
           </div>
-          <div className="footer__support">
-            <h4 className="footer__support-title">24X7 ENQUIRY SUPPORT (ALL DAYS)</h4>
-            <div className="footer__emails">
-              <p>General: <a href="mailto:contactus@caratlane.com" className={emailClass}>contactus@caratlane.com</a></p>
-              <p>Corporate: <a href="mailto:b2b@caratlane.com" className={emailClass}>b2b@caratlane.com</a></p>
-              <p>Hr: <a href="mailto:careers@caratlane.com" className={emailClass}>careers@caratlane.com</a></p>
-              <p>Grievance: <a href="#" className={emailClass}>click here</a></p>
-            </div>
-            <div className="footer__contact-icons">
-              <a href="#" className="footer__icon-btn" aria-label="Call Us">
-                <PhoneIcon />
-                <span>Call Us</span>
-              </a>
-              <a href="#" className="footer__icon-btn" aria-label="Chat">
-                <ChatIcon />
-                <span>Chat</span>
-              </a>
-              <a href="#" className="footer__icon-btn" aria-label="Whatsapp">
-                <WhatsappIcon />
-                <span>Whatsapp</span>
-              </a>
-              <a href="#" className="footer__icon-btn" aria-label="Email">
-                <EmailIcon />
-                <span>Email</span>
-              </a>
-            </div>
+
+          <div className="find-store">
             <a href="#" className="footer__find-store">
               <StoreIcon />
               <span>FIND A STORE</span>
             </a>
           </div>
         </div>
-        <div className="footer__social-block">
+        <div className="mt-4 footer__social-block">
           <p className="footer__find-us">Find Us On</p>
           <div className="w-full footer__social-block-inner">
-            <div className="footer__social-icons">
+            <div className="footer__social-icons mt-4">
               <a href="#" className="footer__social-icon" aria-label="Instagram"><InstagramIcon /></a>
               <a href="#" className="footer__social-icon" aria-label="Facebook"><FacebookIcon /></a>
               <a href="#" className="footer__social-icon" aria-label="LinkedIn"><LinkedInIcon /></a>
               <a href="#" className="footer__social-icon" aria-label="Pinterest"><PinterestIcon /></a>
               <a href="#" className="footer__social-icon" aria-label="X"><XIcon /></a>
             </div>
-            <div className="footer__payment-logos">
+            <div className="hidden md:flex footer__payment-logos">
               <span className="footer__payment-logo" title="VISA">VISA</span>
               <span className="footer__payment-logo" title="Mastercard">Mastercard</span>
               <span className="footer__payment-logo" title="PayPal">PayPal</span>
@@ -183,7 +259,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
+    </footer >
   );
 };
 

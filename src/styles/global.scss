@@ -145,3 +145,29 @@ select:-webkit-autofill:active {
     background: linear-gradient(90deg, rgba(226, 232, 240, 0.6) 0%, rgb(226, 232, 240) 50%, rgba(226, 232, 240, 0.6) 100%) text;
     color: transparent;
 }
+
+.no-scrollbar,
+.scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+}
+
+.no-scrollbar {
+    white-space: nowrap;
+}
+
+/* Services dropdown: regular by default, semi-bold on hover */
+.services-dropdown-link {
+    font-family: var(--font-regular);
+    transition: background-color 0.2s, font-family 0.2s;
+
+    &:hover {
+        font-family: var(--font-semiBold);
+    }
+}

@@ -15,7 +15,7 @@ const AppLayout = (props) => {
   const isMobile = useMemo(() => deviceType === "mobile", [deviceType]);
 
   return (
-    <section className="mb-32">
+    <section>
       {isHeader && (isMobile ? <MobileHeader /> : <Header />)}
       <div className="pt-[120px]">
         {children}

@@ -1,14 +1,61 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { IoMdSearch } from "react-icons/io";
 import avatar from "../../assets/images/avatar.png";
 import { CgMenuLeftAlt } from "react-icons/cg";
+import gsap from "gsap";
 
 const MobileHeader = () => {
+  const headerBarRef = useRef(null);
+  const lastScrollY = useRef(0);
+  const isCollapsed = useRef(false);
+
+  useEffect(() => {
+    const headerBar = headerBarRef.current;
+    if (!headerBar) return;
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+
+      if (scrollY > lastScrollY.current && scrollY > 80) {
+        if (!isCollapsed.current) {
+          isCollapsed.current = true;
+          gsap.to(headerBar, {
+            maxHeight: 0,
+            opacity: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+            marginBottom: 0,
+            overflow: "hidden",
+            duration: 0.3,
+            ease: "power2.inOut",
+          });
+        }
+      } else if (scrollY < lastScrollY.current || scrollY <= 80) {
+        if (isCollapsed.current) {
+          isCollapsed.current = false;
+          gsap.to(headerBar, {
+            maxHeight: 80,
+            opacity: 1,
+            paddingTop: 12,
+            paddingBottom: 0,
+            overflow: "visible",
+            duration: 0.3,
+            ease: "power2.inOut",
+          });
+        }
+      }
+
+      lastScrollY.current = scrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white">
-      <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        {/* Left: menu + avatar */}
+      <div ref={headerBarRef} className="flex items-center justify-between px-4 pt-3 overflow-hidden">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -29,7 +76,6 @@ const MobileHeader = () => {
           </button>
         </div>
 
-        {/* Right icons */}
         <div className="flex items-center gap-3">
           <Link
             to="/stores"
@@ -39,7 +85,7 @@ const MobileHeader = () => {
             <div className="stores-lic" />
           </Link>
 
-          <button type="button" className="p-1 text-[#5b2c6f] transition-colors duration-200 hover:opacity-70" aria-label="Wishlist">
+          <button type="button" className="p-0 text-[#5b2c6f] transition-colors duration-200 hover:opacity-70" aria-label="Wishlist">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -960 960 960" style={{ fill: "#4f3267" }}>
               <path d="M480-147q-14 0-28.5-5T426-168l-69-63q-106-97-191.5-192.5T80-634q0-94 63-157t157-63q53 0 100 22.5t80 61.5q33-39 80-61.5T660-854q94 0 157 63t63 157q0 115-85 211T602-230l-68 62q-11 11-25.5 16t-28.5 5"></path>
             </svg>
@@ -56,7 +102,7 @@ const MobileHeader = () => {
       </div>
 
       {/* Search bar */}
-      <div className="px-4 pb-3">
+      <div className="px-4 py-2">
         <form className="flex items-center h-[40px] flex-1 justify-center" role="search">
           <div className="flex items-center gap-2 w-full h-full rounded-[11px] bg-white overflow-hidden border-1 border-[#e56eeb] px-3">
             <IoMdSearch style={{ color: "var(--primary-color-a)", fontSize: 24, strokeWidth: 4 }} />

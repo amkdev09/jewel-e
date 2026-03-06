@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./header.scss";
 import { PiStorefront } from "react-icons/pi";
 import { IoIosSearch } from "react-icons/io";
+import avatar from "../../assets/images/avatar.png";
 
 const ring = "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 
@@ -86,7 +87,7 @@ const MegaMenu = ({ isOpen, onClose, onEnterPanel, navigate }) => {
                         </div>
                         <div>
                             <h3 className="text-lg font-inter-semibold text-[var(--primary-color-b)] mb-4">By Style</h3>
-                            <ul className="space-y-2.5">
+                            <ul className="space-y-2.5 no-scrollbar">
                                 {MEGA_BY_STYLE.map((item, i) => (
                                     <li key={item}>
                                         <JewelleryLink to="/jewellery">
@@ -165,8 +166,10 @@ const Header = () => {
     const [activeNavItem, setActiveNavItem] = useState(null);
     const [megaMenuOpen, setMegaMenuOpen] = useState(false);
     const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+    const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
     const navTimeoutRef = useRef(null);
     const accountDropdownRef = useRef(null);
+    const servicesTimeoutRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -198,7 +201,7 @@ const Header = () => {
     };
 
     return (
-        <header className="w-full shadow-sm fixed top-0 left-0 right-0 z-50 border-b border-b-2 border-[#e5e7eb]">
+        <header className="w-full shadow-sm fixed top-0 left-0 right-0 z-50 border-b border-b-2 border-[#e5e7eb] overflow-visible">
             {/* Top Light Header */}
             <div
                 className="flex items-center justify-between h-[70px] px-[2.52rem] w-full"
@@ -206,10 +209,15 @@ const Header = () => {
             >
                 {/* Left */}
                 <div className="flex items-center gap-5 min-w-0 w-[72%]">
-                    <div
-                        className="w-8 h-8 rounded-full flex-shrink-0 bg-[#5b2c6f] overflow-hidden mr-3"
-                        aria-hidden
-                    />
+                    <button
+                        type="button"
+                        aria-label="Account"
+                        className="w-8 h-8 rounded-full flex items-center bg-[var(--color-pink)] justify-center shadow-sm"
+                    >
+                        <figure className="w-7 h-7 rounded-full overflow-hidden object-cover bg-[#ffdee4]">
+                            <img src={avatar} alt="avatar" />
+                        </figure>
+                    </button>
                     <form className="flex items-center h-[40px] flex-1" role="search">
                         <div className="flex w-full h-full rounded-[11px] bg-white overflow-hidden">
                             <input
@@ -358,13 +366,13 @@ const Header = () => {
 
             {/* Bottom Navigation Bar + Mega Menu */}
             <nav
-                className="relative flex items-center h-11.5 px-8"
+                className="relative flex items-center h-11.5 px-8 overflow-visible"
                 style={{ backgroundColor: "#5b2c6f" }}
                 aria-label="Main navigation"
                 onMouseLeave={closeMega}
             >
-                <div className="w-full mx-auto flex items-center justify-between overflow-hidden py-5">
-                    <div className="flex items-center gap-6 overflow-x-auto min-h-[50px]" onMouseEnter={cancelClose}>
+                <div className="w-full mx-auto flex items-center justify-between py-5">
+                    <div className="flex items-center gap-6 overflow-x-auto min-h-[50px] no-scrollbar min-w-0 flex-1" onMouseEnter={cancelClose}>
                         {NAV_ITEMS.map((label) => (
                             <span
                                 key={label}
@@ -384,18 +392,53 @@ const Header = () => {
                             </span>
                         ))}
                     </div>
-                    <button
-                        type="button"
-                        className="flex items-center justify-center
-                                    rounded-xl border border-gray-300
-                                    bg-[#6b4887] 
-                                    text-white text-base font-inter-regular
-                                    px-4 py-1
-                                    cursor-pointer gap-1"
+                    <div
+                        className="relative flex-shrink-0 overflow-visible"
+                        onMouseEnter={() => {
+                            if (servicesTimeoutRef.current) clearTimeout(servicesTimeoutRef.current);
+                            setServicesDropdownOpen(true);
+                        }}
+                        onMouseLeave={() => {
+                            servicesTimeoutRef.current = setTimeout(() => setServicesDropdownOpen(false), 150);
+                        }}
                     >
-                        <span>Services</span>
-                        <ChevronDownIcon />
-                    </button>
+                        <button
+                            type="button"
+                            className="flex items-center justify-center
+                                        rounded-xl border border-gray-300
+                                        bg-[#6b4887] 
+                                        text-white text-base font-inter-regular
+                                        px-4 py-1
+                                        cursor-pointer gap-1"
+                        >
+                            <span>Services</span>
+                            <ChevronDownIcon />
+                        </button>
+                        {servicesDropdownOpen && (
+                            <div
+                                className="absolute right-0 top-full pt-1 min-w-[280px] bg-white rounded-xl shadow-lg py-2 z-50 overflow-hidden"
+                                style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden" }}
+                                onMouseEnter={() => { if (servicesTimeoutRef.current) { clearTimeout(servicesTimeoutRef.current); servicesTimeoutRef.current = null; } }}
+                                onMouseLeave={() => {
+                                    servicesTimeoutRef.current = setTimeout(() => setServicesDropdownOpen(false), 150);
+                                }}
+                            >
+                                <Link
+                                    to="/try-at-home"
+                                    className="services-dropdown-link block px-4 py-2.5 text-lg text-[#4F3267] hover:bg-[#f6f3f9] transition-colors"
+                                >
+                                    Try at Home
+                                </Link>
+                                <Link
+                                    to="/video-call"
+                                    className="services-dropdown-link block px-4 py-2.5 text-lg text-[#4F3267] hover:bg-[#f6f3f9] transition-colors"
+                                >
+                                    Video Call
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+
                 </div>
                 <MegaMenu isOpen={megaMenuOpen} onClose={closeMega} onEnterPanel={cancelClose} navigate={navigate} />
             </nav>

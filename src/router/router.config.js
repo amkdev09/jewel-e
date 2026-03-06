@@ -12,6 +12,7 @@ export const commonRouters = [
   {
     path: "/login",
     component: asyncComponent(() => import("../pages/auth/login.jsx")),
+    isBottomNav: false,
   },
   {
     path: "/jewellery",

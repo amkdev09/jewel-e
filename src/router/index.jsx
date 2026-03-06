@@ -6,7 +6,7 @@ import AppLayout from "../layout";
 import { commonRouters, protectedRouters } from "./router.config";
 
 const AppRouter = () => {
-  const isMobile = useMediaQuery("(max-width:600px)");
+  const isMobile = useMediaQuery("(max-width:768px)");
 
   const deviceType = useMemo(() => {
     if (isMobile) return "mobile";
