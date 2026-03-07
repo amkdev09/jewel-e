@@ -348,12 +348,12 @@ const Header = () => {
                                 </div>
                             )}
                         </div>
-                        <button type="button" className="p-1 text-[#5b2c6f] transition-colors duration-200 hover:opacity-70" aria-label="Wishlist">
+                        <button onClick={() => navigate("/wishlist")} type="button" className="p-1 text-[#5b2c6f] transition-colors duration-200 hover:opacity-70" aria-label="Wishlist">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -960 960 960" style={{ fill: "#4f3267" }}>
                                 <path d="M480-147q-14 0-28.5-5T426-168l-69-63q-106-97-191.5-192.5T80-634q0-94 63-157t157-63q53 0 100 22.5t80 61.5q33-39 80-61.5T660-854q94 0 157 63t63 157q0 115-85 211T602-230l-68 62q-11 11-25.5 16t-28.5 5"></path>
                             </svg>
                         </button>
-                        <button className="links css-dpoqzr" aria-labelledby="takestocart" name="cartlink">
+                        <button onClick={() => navigate("/cart/shopping-cart")} className="links css-dpoqzr" aria-labelledby="takestocart" name="cartlink">
                             <span className="css-133bxhf">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#4F3267" viewBox="0 -960 960 960" style={{ color: "#4f3267" }}>
                                     <path d="M240-80q-33 0-56.5-23.5T160-160v-480q0-33 23.5-56.5T240-720h80q0-66 47-113t113-47 113 47 47 113h80q33 0 56.5 23.5T800-640v480q0 33-23.5 56.5T720-80zm160-640h160q0-33-23.5-56.5T480-800t-56.5 23.5T400-720m200 200q17 0 28.5-11.5T640-560v-80h-80v80q0 17 11.5 28.5T600-520m-240 0q17 0 28.5-11.5T400-560v-80h-80v80q0 17 11.5 28.5T360-520"></path>
@@ -431,7 +431,7 @@ const Header = () => {
                                     Try at Home
                                 </Link>
                                 <Link
-                                    to="/video-call"
+                                    to="/call-live"
                                     className="services-dropdown-link block px-4 py-2.5 text-lg text-[#4F3267] hover:bg-[#f6f3f9] transition-colors"
                                 >
                                     Video Call

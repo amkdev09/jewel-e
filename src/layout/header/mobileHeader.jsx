@@ -1,15 +1,18 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { IoMdSearch } from "react-icons/io";
 import avatar from "../../assets/images/avatar.png";
 import { CgMenuLeftAlt } from "react-icons/cg";
 import gsap from "gsap";
+import Sidebar from "../sidebar";
 
 const MobileHeader = () => {
   const headerBarRef = useRef(null);
   const lastScrollY = useRef(0);
   const isCollapsed = useRef(false);
   const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   useEffect(() => {
     const headerBar = headerBarRef.current;
@@ -62,6 +65,7 @@ const MobileHeader = () => {
             type="button"
             aria-label="Open navigation menu"
             className="flex flex-col justify-center gap-[3px]"
+            onClick={() => setDrawerOpen(prev => !prev)}
           >
             <CgMenuLeftAlt style={{ color: "var(--primary-color-a)", fontSize: 24, }} />
           </button>
@@ -92,7 +96,7 @@ const MobileHeader = () => {
               <path d="M480-147q-14 0-28.5-5T426-168l-69-63q-106-97-191.5-192.5T80-634q0-94 63-157t157-63q53 0 100 22.5t80 61.5q33-39 80-61.5T660-854q94 0 157 63t63 157q0 115-85 211T602-230l-68 62q-11 11-25.5 16t-28.5 5"></path>
             </svg>
           </button>
-          <button className="links css-dpoqzr" aria-labelledby="takestocart" name="cartlink">
+          <button onClick={() => navigate("/cart/shopping-cart")} className="links css-dpoqzr" aria-labelledby="takestocart" name="cartlink">
             <span className="css-133bxhf">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#4F3267" viewBox="0 -960 960 960" style={{ color: "#4f3267" }}>
                 <path d="M240-80q-33 0-56.5-23.5T160-160v-480q0-33 23.5-56.5T240-720h80q0-66 47-113t113-47 113 47 47 113h80q33 0 56.5 23.5T800-640v480q0 33-23.5 56.5T720-80zm160-640h160q0-33-23.5-56.5T480-800t-56.5 23.5T400-720m200 200q17 0 28.5-11.5T640-560v-80h-80v80q0 17 11.5 28.5T600-520m-240 0q17 0 28.5-11.5T400-560v-80h-80v80q0 17 11.5 28.5T360-520"></path>
@@ -102,7 +106,7 @@ const MobileHeader = () => {
           </button>
         </div>
       </div>
-
+      <Sidebar isOpen={drawerOpen} onClose={closeDrawer} />
       {/* Search bar */}
       <div className="px-4 py-2">
         <form className="flex items-center h-[40px] flex-1 justify-center" role="search">

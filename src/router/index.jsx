@@ -31,20 +31,24 @@ const AppRouter = () => {
     <div className="min-h-screen h-full relative overflow-hidden ">
       <Routes>
         {commonRouters.map((routeConfig) => {
-          const { path, isHeader, isBottomNav } = routeConfig;
+          const { path, isHeader, isBottomNav, disableLayout = false } = routeConfig;
 
           return (
             <Route
               key={path}
               path={path}
               element={
-                <AppLayout
-                  deviceType={deviceType}
-                  isHeader={isHeader}
-                  isBottomNav={isBottomNav}
-                >
-                  {resolveElement(routeConfig)}
-                </AppLayout>
+                disableLayout ? (
+                  resolveElement(routeConfig)
+                ) : (
+                  <AppLayout
+                    deviceType={deviceType}
+                    isHeader={isHeader}
+                    isBottomNav={isBottomNav}
+                  >
+                    {resolveElement(routeConfig)}
+                  </AppLayout>
+                )
               }
             />
           );

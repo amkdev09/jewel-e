@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useMemo, useState, useCallback } from "react";
 import Header from "./header";
 import Footer from "./footer";
 import MobileHeader from "./header/mobileHeader";
@@ -13,6 +13,7 @@ const AppLayout = (props) => {
   } = props;
 
   const isMobile = useMemo(() => deviceType === "mobile", [deviceType]);
+
 
   return (
     <section>

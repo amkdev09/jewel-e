@@ -1,5 +1,13 @@
 import asyncComponent from "../utils/asyncComponent.jsx";
 
+/**
+  // config setup logic
+  isHeader: to make global header visible or not
+  isBottomNav: to make global bottom navigation visible or not
+  disableLayout: to make the page not to be wrapped in the AppLayout
+ */
+
+
 export const commonRouters = [
   {
     path: "/",
@@ -30,6 +38,24 @@ export const commonRouters = [
     path: "/stores",
     component: asyncComponent(() => import("../pages/main/Stores.jsx")),
   },
+  {
+    path: "/try-at-home",
+    component: asyncComponent(() => import("../pages/main/tryAtHome/index.jsx")),
+  },
+  {
+    path: "/call-live",
+    component: asyncComponent(() => import("../pages/main/callLive/index.jsx")),
+  },
+  {
+    path: "/wishlist",
+    component: asyncComponent(() => import("../pages/main/wishlist/index.jsx")),
+    isBottomNav: false,
+  },
+  {
+    path: "/cart/shopping-cart",
+    component: asyncComponent(() => import("../pages/main/cart/shoppingCart.jsx")),
+    disableLayout: true,
+  }
 ];
 
 export const protectedRouters = [
