@@ -1,16 +1,20 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-
-// Pixel-perfect tokens from design
-const LOGO_COLOR = "#C0A1E0";
+import { Link, useNavigate } from "react-router-dom";
+import { MdOutlineFingerprint } from "react-icons/md";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import Cookies from "js-cookie";
+import authService from "../../services/authService";
+import RedditInput from "../../components/input/redditInput";
+import useSnackbar from "../../hooks/useSnackbar";
+import RedditPasswordInput from "../../components/input/password";
 
 const LogoIcon = () => (
-  <svg width="42" height="42" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="28" cy="28" r="26" stroke={LOGO_COLOR} strokeWidth="2" fill="none" />
-    <circle cx="28" cy="28" r="18" stroke={LOGO_COLOR} strokeWidth="1.5" fill="none" opacity="0.7" />
-    <circle cx="28" cy="28" r="10" stroke={LOGO_COLOR} strokeWidth="1" fill="none" opacity="0.5" />
-    <circle cx="28" cy="28" r="4" fill={LOGO_COLOR} opacity="0.8" />
-  </svg>
+  <div className="sign-up-head">
+    <p className="loader">
+      <MdOutlineFingerprint />
+    </p>
+  </div>
 );
 
 const GoogleIcon = () => (
@@ -29,16 +33,44 @@ const FacebookIcon = () => (
 );
 
 const Login = () => {
-  const [emailOrMobile, setEmailOrMobile] = useState("");
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const canContinue = emailOrMobile.trim().length > 0 && termsAccepted;
+  const [takePassword, setTakePassword] = useState(false);
+  const { showSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    Cookies.set("emailOrMobile", emailOrMobile);
-  };
+  const stepOneSchema = Yup.object().shape({
+    identifier: Yup.string()
+      .required("Email or mobile is required")
+      .test(
+        "is-valid-identifier",
+        "Enter a valid email or 10 digit mobile number",
+        (value) => {
+          if (!value) return false;
+          const trimmed = value.trim();
+          const emailRegex =
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
+          const phoneRegex = /^[0-9]{10}$/;
+          return emailRegex.test(trimmed) || phoneRegex.test(trimmed);
+        }
+      ),
+    termsAccepted: Yup.boolean().oneOf(
+      [true],
+      "You must accept the terms and conditions"
+    ),
+  });
+
+  const stepTwoSchema = Yup.object().shape({
+    identifier: Yup.string().required("Email or mobile is required"),
+    termsAccepted: Yup.boolean().oneOf(
+      [true],
+      "You must accept the terms and conditions"
+    ),
+    password: Yup.string()
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters"),
+  });
 
   return (
-    <div    >
+    <div>
       <div className="w-full flex flex-col items-center mx-auto pt-[100px] pb-[80px]" style={{ maxWidth: "288px" }}>
         {/* Logo — 50–60px, centered */}
         <div className="flex justify-center mb-6">
@@ -49,73 +81,136 @@ const Login = () => {
         <h1
           className="text-center font-inter-semibold text-lg text-[var(--primary-color-a)] mb-2"
         >
-          Login to CaratLane
+          {!takePassword ? "Login to CaratLane" : "Enter Password to Login"}
         </h1>
 
-        {/* Description — 14–16px, #4A4A4A, centered */}
-        <p
-          className="text-center font-inter-regular text-sm text-[var(--primary-color-a)] mx-0"
-          style={{
-            marginBottom: "28px",
+        <Formik
+          initialValues={{
+            identifier: "",
+            termsAccepted: false,
+            password: "",
+          }}
+          validationSchema={takePassword ? stepTwoSchema : stepOneSchema}
+          validateOnBlur
+          validateOnChange={false}
+          onSubmit={async (values, helpers) => {
+            const { setSubmitting } = helpers;
+
+            if (!takePassword) {
+              try {
+                await stepOneSchema.validate(values, { abortEarly: false });
+                setTakePassword(true);
+              } catch (validationError) {
+                const formErrors = {};
+                if (validationError.inner && validationError.inner.length) {
+                  validationError.inner.forEach((err) => {
+                    if (err.path && !formErrors[err.path]) {
+                      formErrors[err.path] = err.message;
+                    }
+                  });
+                } else if (validationError.path) {
+                  formErrors[validationError.path] = validationError.message;
+                }
+                showSnackbar(formErrors, "error");
+              } finally {
+                setSubmitting(false);
+              }
+              return;
+            }
+
+            try {
+              await stepTwoSchema.validate(values, { abortEarly: false });
+
+              const payload = {
+                identifier: values.identifier.trim(),
+                password: values.password,
+              };
+
+              const response = await authService.login(payload);
+
+              if (!response?.success) {
+                showSnackbar(response?.message || "Login failed. Please try again.", "error");
+                setSubmitting(false);
+
+                const token = response?.data?.token;
+                const refreshToken = response?.data?.refreshToken;
+                const user = response?.data?.user;
+
+                if (token) {
+                  Cookies.set("token", token);
+                }
+                if (refreshToken) {
+                  Cookies.set("refreshToken", refreshToken);
+                }
+                if (user) {
+                  try {
+                    localStorage.setItem("user", JSON.stringify(user));
+                  } catch {
+                    // ignore storage errors
+                  }
+                }
+
+                navigate("/");
+              }
+
+            } catch (error) {
+              if (error.name === "ValidationError") {
+                const formErrors = {};
+                if (error.inner && error.inner.length) {
+                  error.inner.forEach((err) => {
+                    if (err.path && !formErrors[err.path]) {
+                      formErrors[err.path] = err.message;
+                    }
+                  });
+                } else if (error.path) {
+                  formErrors[error.path] = error.message;
+                }
+                showSnackbar(formErrors, "error");
+              } else {
+                const message =
+                  error?.message ||
+                  error?.error ||
+                  error?.data?.message ||
+                  "Login failed. Please check your credentials and try again.";
+                showSnackbar(message, "error");
+              }
+            } finally {
+              setSubmitting(false);
+            }
           }}
         >
-          Login to unlock best prices and become an insider for our exclusive launches &amp; offers. Complete your profile and get ₹500 worth of xClusive Points.
-        </p>
-
-        {/* Input — Enter Mobile Number or Email */}
-        <div
-          className="w-full rounded-[30px] overflow-hidden mb-6"
-          style={{
-            backgroundColor: "rgb(246, 243, 249)",
-            borderRadius: "6px",
-          }}
-        >
-          <input
-            type="text"
-            placeholder="Enter Mobile Number or Email"
-            value={emailOrMobile}
-            onChange={(e) => setEmailOrMobile(e.target.value)}
-            className="w-full outline-none px-4 py-3 text-sm text-[var(--primary-color-a)] placeholder:text-[var(--primary-color-a)] rounded-[30px]"
-          />
-        </div>
-
-        {/* Checkbox + legal text */}
-        <label className="flex items-start gap-3 w-full cursor-pointer mb-6">
-          <input
-            type="checkbox"
-            checked={termsAccepted}
-            onChange={(e) => setTermsAccepted(e.target.checked)}
-            className="login-checkbox mt-0.5 flex-shrink-0"
-            style={{
-              width: "18px",
-              height: "18px",
-              minWidth: "18px",
-              minHeight: "18px",
-            }}
-          />
-          <span
-            className="font-inter-regular text-sm text-[var(--primary-color-a)]"
-          >
-            By continuing you acknowledge that you are at least 18 years old and have read and agree to CaratLane&apos;s{" "}
-            <a href="/terms" className="underline text-[var(--color-pink)]">terms and condition</a>
-            {" "}and{" "}
-            <a href="/privacy" className="underline text-[var(--color-pink)]">privacy_policy</a>
-          </span>
-        </label>
-
-        {/* CONTINUE TO LOGIN — disabled state #E0E0E0, text #888888 */}
-        <button
-          type="button"
-          disabled={!canContinue}
-          className={`w-full h-[48px] mb-[28px] text-sm tracking-wide transition-all 
-                    rounded-md font-inter-semibold
-                    ${canContinue
-              ? "bg-gradient-to-r from-[rgb(222,87,229)] to-[rgb(136,99,251)] text-white"
-              : "bg-[rgb(236,236,236)] text-[rgb(172,172,172)]"
-            }`}
-        >
-          CONTINUE TO LOGIN
-        </button>
+          {({
+            values,
+            errors,
+            touched,
+            handleChange,
+            handleBlur,
+            isSubmitting,
+          }) => (
+            <Form className="w-full">
+              {!takePassword ? (
+                <EmailState
+                  values={values}
+                  errors={errors}
+                  touched={touched}
+                  handleChange={handleChange}
+                  handleBlur={handleBlur}
+                  isSubmitting={isSubmitting}
+                />
+              ) : (
+                <PasswordState
+                  values={values}
+                  errors={errors}
+                  touched={touched}
+                  handleChange={handleChange}
+                  handleBlur={handleBlur}
+                  isSubmitting={isSubmitting}
+                  setTakePassword={setTakePassword}
+                />
+              )}
+            </Form>
+          )}
+        </Formik>
 
         {/* Social login — Google + Facebook circular */}
         <div
@@ -145,15 +240,160 @@ const Login = () => {
         </div>
 
         {/* Sign-up prompt */}
-        <p className="font-inter-regular text-sm text-[var(--primary-color-a)]">
-          New to CaratLane?{" "}
-          <Link to="/signup" className="text-[var(--color-pink)]">
-            Create an Account
-          </Link>
-        </p>
+        {!takePassword && (
+          <p className="font-inter-regular text-sm text-[var(--primary-color-a)]">
+            New to CaratLane?{" "}
+            <Link to="/signup" className="text-[var(--color-pink)]">
+              Create an Account
+            </Link>
+          </p>)}
       </div>
     </div >
   );
 };
 
 export default Login;
+
+const EmailState = ({
+  values,
+  errors,
+  touched,
+  handleChange,
+  handleBlur,
+  isSubmitting,
+}) => {
+  return (
+    <>
+      {/* Description — 14–16px, #4A4A4A, centered */}
+      <p
+        className="text-center font-inter-regular text-sm text-[var(--primary-color-a)] mx-0"
+        style={{
+          marginBottom: "28px",
+        }}
+      >
+        Login to unlock best prices and become an insider for our exclusive launches &amp; offers. Complete your profile and get ₹500 worth of xClusive Points.
+      </p>
+
+      {/* Input — Enter Mobile Number or Email */}
+      <RedditInput
+        label="Enter Mobile Number or Email"
+        name="identifier"
+        value={values.identifier}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="Enter Mobile Number or Email"
+        fullWidth={true}
+        error={Boolean(touched.identifier && errors.identifier)}
+        helperText={touched.identifier && errors.identifier}
+      />
+
+      {/* Checkbox + legal text */}
+      <label className="flex items-start gap-3 w-full cursor-pointer mb-6 mt-[28px]">
+        <input
+          type="checkbox"
+          name="termsAccepted"
+          checked={values.termsAccepted}
+          onChange={handleChange}
+          className="login-checkbox mt-0.5 flex-shrink-0"
+          style={{
+            width: "18px",
+            height: "18px",
+            minWidth: "18px",
+            minHeight: "18px",
+          }}
+        />
+        <span
+          className="font-inter-regular text-sm text-[var(--primary-color-a)]"
+        >
+          By continuing you acknowledge that you are at least 18 years old and have read and agree to CaratLane&apos;s{" "}
+          <a href="/terms" className="underline text-[var(--color-pink)]">terms and condition</a>
+          {" "}and{" "}
+          <a href="/privacy" className="underline text-[var(--color-pink)]">privacy_policy</a>
+        </span>
+      </label>
+
+      {/* CONTINUE TO LOGIN — disabled state #E0E0E0, text #888888 */}
+      <button
+        type="submit"
+        disabled={isSubmitting || !values.identifier || !values.termsAccepted}
+        className={`w-full h-[48px] mb-[28px] text-sm tracking-wide transition-all 
+                    rounded-md font-inter-semibold
+                    ${values.identifier && values.termsAccepted
+            ? "bg-gradient-to-r from-[rgb(222,87,229)] to-[rgb(136,99,251)] text-white"
+            : "bg-[rgb(236,236,236)] text-[rgb(172,172,172)]"
+          }`}
+      >
+        CONTINUE TO LOGIN
+      </button>
+    </>
+  );
+};
+
+const PasswordState = ({
+  values,
+  errors,
+  touched,
+  handleChange,
+  handleBlur,
+  isSubmitting,
+  setTakePassword,
+}) => {
+  return (
+    <>
+      <p
+        className="text-center font-inter-regular text-sm text-[var(--primary-color-a)] mx-0"
+        style={{
+          marginBottom: "28px",
+        }}
+      >
+        {values.identifier || "Please enter your password"}
+        {" "}
+        {values.identifier &&
+          <button
+            className="text-[var(--color-pink)] font-inter-regular text-sm border-none bg-transparent outline-none"
+            onClick={() => setTakePassword(false)}>
+            Change Email
+          </button>}
+      </p>
+
+      {/* Input — Enter Mobile Number or Email */}
+      <RedditPasswordInput
+        label="Enter Password"
+        name="password"
+        value={values.password}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="Enter Password"
+        fullWidth={true}
+        error={Boolean(touched.password && errors.password)}
+        helperText={touched.password && errors.password}
+      />
+      {/* CONTINUE TO LOGIN — disabled state #E0E0E0, text #888888 */}
+      <button
+        type="submit"
+        disabled={isSubmitting || !values.password}
+        className={`w-full h-[48px] text-sm tracking-wide transition-all 
+                    rounded-md font-inter-semibold mt-[20px]
+                    ${values.password
+            ? "bg-gradient-to-r from-[rgb(222,87,229)] to-[rgb(136,99,251)] text-white"
+            : "bg-[rgb(236,236,236)] text-[rgb(172,172,172)]"
+          }`}
+      >
+        LOGIN
+      </button>
+      <div className="flex justify-center my-[16px]">
+        <button className="text-[var(--color-pink)] font-inter-regular text-sm border-none bg-transparent outline-none">
+          Forgot Password?
+        </button>
+      </div>
+      <button
+        type="button"
+        className={`w-full h-[48px] mb-[20px] text-sm tracking-wide transition-all 
+                    rounded-md font-inter-semibold border-[var(--primary-color-b)] border-1
+                    text-[var(--primary-color-a)]`}
+      >
+        GET OTP IN YOUR EMAIL
+      </button>
+    </>
+  );
+};

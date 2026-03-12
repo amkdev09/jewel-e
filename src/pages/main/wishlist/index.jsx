@@ -23,7 +23,7 @@ const WishList = () => {
 
             {/* Start Shopping button */}
             <Link
-                to="/"
+                to="/jewellery"
                 className="font-inter-semibold h-[42px] text-lg text-white text-center rounded-[8px] py-2 w-full max-w-[350px] transition-opacity hover:opacity-95 inline-block"
                 style={{
                     background: "linear-gradient(to right, rgb(222, 87, 229), rgb(136, 99, 251))",

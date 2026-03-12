@@ -16,16 +16,16 @@ const userAuthSlice = createSlice({
       state.refreshToken = null;
     },
     setUserData: (state, action) => {
-      state.userData = action.payload.userData;
-      state.token = action.payload.token;
-      state.refreshToken = action.payload.refreshToken;
+      state.userData = action.payload;
     },
-    mergeAuthState: (state, action) => {
-      const payload = action.payload;
-      if (payload.userData !== undefined) state.userData = payload.userData;
+    getUserData: async (state, action) => {
+      const response = await authService.getUserData();
+      if (response.success) {
+        state.userData = response.data.user;
+      }
     },
   },
 });
 
-export const { clearUser, setUserData, mergeAuthState } = userAuthSlice.actions;
+export const { clearUser, registerUser, loginUser, getUserData } = userAuthSlice.actions;
 export default userAuthSlice.reducer;

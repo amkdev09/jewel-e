@@ -1,6 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Box } from "@mui/material";
-import BTLoader from "../components/Loader";
+import { Box, CircularProgress } from "@mui/material";
 import { AppColors } from "../constant/appColors";
 
 const componentCache = new WeakMap();
@@ -16,7 +15,7 @@ const defaultFallback = (
       height: "100vh",
     }}
   >
-    <BTLoader />
+    <CircularProgress size={24} color="var(--primary-color-b)" />
   </Box>
 );
 

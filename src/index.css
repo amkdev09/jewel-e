@@ -56,16 +56,17 @@ body {
   --primary-color-b: rgb(136, 99, 251);
   --primary-color-c: rgb(135, 118, 157);
   --primary-color-d: rgb(246, 243, 249);
-  
-  --secondary-color-d: rgb(192, 172, 157);
-  --secondary-color-e: rgb(224, 213, 200);
-  --secondary-color-f: rgb(240, 230, 218);
-  --secondary-color-g: rgb(248, 242, 234);
-  --secondary-color-h: rgb(252, 248, 242);
-  --secondary-color-i: rgb(255, 255, 255);
+  --secondary-color-a: rgb(192, 172, 157);
+  --secondary-color-b: rgb(224, 213, 200);
+  --secondary-color-c: rgb(240, 230, 218);
+  --secondary-color-d: rgb(248, 242, 234);
+  --secondary-color-e: rgb(252, 248, 242);
+  --secondary-color-f: rgb(255, 255, 255);
   --color-black: #000;
   --color-white: #fff;
   --color-pink: #DE57E5;
+  --error-color: #d32f2f;
+
   --spacing: .25rem;
   --container-3xs: 16rem;
   --container-xs: 20rem;

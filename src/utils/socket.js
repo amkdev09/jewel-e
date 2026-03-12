@@ -1,16 +1,20 @@
 import { io } from "socket.io-client";
 
 export function createSosSocket() {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL.trim();
-  if (!baseUrl) {
+  // In dev, use same origin so Vite proxy can forward /socket.io (avoids CORS).
+  const baseUrl = import.meta.env.DEV
+    ? ''
+    : (import.meta.env.VITE_API_BASE_URL || '').trim();
+  if (!import.meta.env.DEV && !baseUrl) {
     console.error("[Socket] API base URL is not set");
     return;
   }
-  const socket = io(baseUrl, {
+  const path = baseUrl ? `${baseUrl}/socket.io` : '/socket.io';
+  const socket = io(baseUrl ? baseUrl : window.location.origin, {
     transports: ["websocket"],
     reconnectionAttempts: 5,
     reconnectionDelay: 1000,
-    path: `${baseUrl}/socket.io`,
+    path,
   });
 
   socket.on("connect", () => {

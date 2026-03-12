@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { MdKeyboardArrowDown } from "react-icons/md";
-const ring = "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-/* Pixel-perfect Jewellery listing page — exact clone of design. */
+import productService from "../../services/productSerive";
+import { SORT_OPTIONS, METAL_TYPES, DEFAULT_LIMIT } from "../../services/productSerive";
+
+const PLACEHOLDER_IMAGE =
+  "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
+/* Pixel-perfect Jewellery listing page — API-driven with infinite scroll. */
 
 const ICON = ({ d, className = "", viewBox = "0 0 24 24", fill = "none", stroke = "currentColor" }) => (
   <svg className={className} fill={fill} stroke={stroke} strokeWidth={fill === "currentColor" ? 0 : 2} viewBox={viewBox} xmlns="http://www.w3.org/2000/svg">
@@ -60,33 +66,6 @@ const FILTER_SECTIONS = [
   { title: "Offers", items: ["On Sale"] },
 ];
 
-const MOCK_PRODUCTS = [
-  { name: "Tisya Diamond Gemstone Pendant Necklace", price: "₹78,365", original: "₹83,654", save: "₹ 3,000", exclusive: true, badge: "NEW", image: ring },
-  { name: "Soul Bliss Gemstone Pendant Necklace", price: "₹65,420", original: "₹72,000", save: null, exclusive: false, badge: null, image: ring },
-  { name: "Lush Petals Gemstone Necklace", price: "₹91,200", original: "₹98,500", save: null, exclusive: true, badge: null, image: ring },
-  { name: "Victoria Pearl Pendant Necklace", price: "₹44,990", original: null, save: null, exclusive: false, badge: "NEW", image: ring },
-  { name: "Floral Gold Plated Bracelet", price: "₹ 21,999", original: "₹ 25,000", save: "₹ 3,000", exclusive: true, badge: "NEW", image: ring },
-  { name: "Classic Gold Bangle Set", price: "₹ 18,500", original: null, save: null, exclusive: false, badge: null, image: ring },
-  { name: "Designer Kada Bracelet", price: "₹ 32,000", original: "₹ 35,000", save: "₹ 3,000", exclusive: true, badge: null, image: ring },
-  { name: "Elegant Pearl Bracelet", price: "₹ 14,999", original: null, save: null, exclusive: false, badge: "NEW", image: ring },
-  { name: "Artistic Gold Bracelet", price: "₹ 27,500", original: "₹ 30,000", save: "₹ 2,500", exclusive: false, badge: null, image: ring },
-  { name: "Traditional Bangle Pair", price: "₹ 22,000", original: null, save: null, exclusive: true, badge: null, image: ring },
-  { name: "Contemporary Cuff Bracelet", price: "₹ 19,999", original: "₹ 24,000", save: "₹ 4,001", exclusive: false, badge: "NEW", image: ring },
-  { name: "Minimalist Gold Bracelet", price: "₹ 16,500", original: null, save: null, exclusive: false, badge: null, image: ring },
-  { name: "Statement Gold Bracelet", price: "₹ 45,000", original: "₹ 50,000", save: "₹ 5,000", exclusive: true, badge: null, image: ring },
-  { name: "Pearl & Gold Bracelet", price: "₹ 28,750", original: null, save: null, exclusive: false, badge: "NEW", image: ring },
-  { name: "Tennis Bracelet Style", price: "₹ 38,000", original: "₹ 42,000", save: "₹ 4,000", exclusive: false, badge: null, image: ring },
-  { name: "Oxidised Silver Bracelet", price: "₹ 12,999", original: null, save: null, exclusive: true, badge: null, image: ring },
-  { name: "Bridal Gold Bracelet", price: "₹ 52,000", original: "₹ 58,000", save: "₹ 6,000", exclusive: false, badge: "NEW", image: ring },
-  { name: "Diamond Line Bracelet", price: "₹ 65,000", original: null, save: null, exclusive: true, badge: null, image: ring },
-  { name: "Rose Gold Bangle", price: "₹ 24,500", original: "₹ 27,000", save: "₹ 2,500", exclusive: false, badge: null, image: ring },
-  { name: "Kids Charm Bracelet", price: "₹ 8,999", original: null, save: null, exclusive: false, badge: "NEW", image: ring },
-  { name: "Antique Finish Bracelet", price: "₹ 31,000", original: "₹ 34,000", save: "₹ 3,000", exclusive: true, badge: null, image: ring },
-  { name: "Chain Link Bracelet", price: "₹ 15,750", original: null, save: null, exclusive: false, badge: null, image: ring },
-  { name: "Gemstone Bracelet", price: "₹ 29,999", original: "₹ 33,000", save: "₹ 3,001", exclusive: false, badge: "NEW", image: ring },
-  { name: "Twisted Gold Bracelet", price: "₹ 20,250", original: null, save: null, exclusive: true, badge: null, image: ring },
-];
-
 const FOOTER_COLUMNS = [
   { heading: "SHOP BY", links: ["Jewellery", "Apparels", "Home & living", "Gifts"] },
   { heading: "ABOUT US", links: ["Our Story", "Careers", "Press"] },
@@ -94,92 +73,199 @@ const FOOTER_COLUMNS = [
   { heading: "Our Stores", links: [], address: "123 Jewellery Lane, City", phone: "+91 98765 43210", email: "hello@corazor.com" },
 ];
 
+const SORT_LABELS = { latest: "Recommended", price_asc: "Price: Low to High", price_desc: "Price: High to Low" };
+
+/** Demo products shown when API returns no items */
+const DEMO_PRODUCTS = [
+  {
+    id: "demo-1",
+    name: "Tisya Diamond Gemstone Pendant Necklace",
+    price: "₹78,365",
+    original: "₹83,654",
+    save: "₹3,000",
+    exclusive: true,
+    badge: "NEW",
+    image: PLACEHOLDER_IMAGE,
+  },
+  {
+    id: "demo-2",
+    name: "Soul Bliss Gemstone Pendant Necklace",
+    price: "₹65,420",
+    original: "₹72,000",
+    save: null,
+    exclusive: false,
+    badge: null,
+    image: PLACEHOLDER_IMAGE,
+  },
+];
+
+/** Format number as INR for display */
+function formatPrice(value) {
+  if (value == null || Number.isNaN(Number(value))) return null;
+  return `₹${Number(value).toLocaleString("en-IN")}`;
+}
+
+/** Normalize API product to ProductCard shape */
+function normalizeProduct(item) {
+  if (!item || typeof item !== "object") return null;
+  const name = item.name ?? item.title ?? "";
+  const priceNum = item.price ?? item.salePrice ?? item.sellingPrice ?? 0;
+  const originalNum = item.originalPrice ?? item.mrp ?? item.price ?? null;
+  const price = formatPrice(priceNum) ?? "₹0";
+  const original = originalNum != null && Number(originalNum) > Number(priceNum) ? formatPrice(originalNum) : null;
+  const saveNum = originalNum != null && Number(originalNum) > Number(priceNum) ? Number(originalNum) - Number(priceNum) : null;
+  const save = saveNum != null ? formatPrice(saveNum) : null;
+  const image = item.image ?? item.thumbnail ?? (Array.isArray(item.images) && item.images[0]) ?? item.mainImage ?? PLACEHOLDER_IMAGE;
+  const badge = item.badge ?? (item.isNew ? "NEW" : null);
+  const exclusive = Boolean(item.exclusive ?? item.isExclusive);
+  return { id: item.id ?? item._id, name, price, original, save, exclusive, badge, image };
+}
+
 const BreadcrumbBar = () => (
   <div
     className="hidden md:flex items-center justify-between bg-white px-4 md:px-6 lg:px-[35px]"
-    style={{
-      height: "40px",
-      fontSize: "14px",
-      color: "#333333",
-      fontWeight: 400,
-    }}
+    style={{ height: "40px", fontSize: "14px", color: "#333333", fontWeight: 400 }}
   >
     <span>Home / Jewellery</span>
     <span className="font-bold" style={{ color: "#6A2E8D", fontSize: "16px" }}>Bracelets & Bangles</span>
   </div>
 );
 
-const MobileFilterBar = () => (
+const MobileFilterBar = ({ sortBy, onSortChange, onOpenFilters }) => (
   <div className="md:hidden sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-white border-b border-[#E0E0E0]">
-    <button type="button" className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded border border-[#E0E0E0] text-[#333333] text-sm font-medium">
+    <button type="button" onClick={onOpenFilters} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded border border-[#E0E0E0] text-[#333333] text-sm font-medium">
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
       </svg>
       Filter
     </button>
-    <button type="button" className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded border border-[#E0E0E0] text-[#333333] text-sm font-medium">
-      Sort by: Recommended
-      <MdKeyboardArrowDown style={{ fontSize: 16 }} />
-    </button>
+    <select
+      value={sortBy}
+      onChange={(e) => onSortChange(e.target.value)}
+      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded border border-[#E0E0E0] text-[#333333] text-sm font-medium bg-white"
+    >
+      {SORT_OPTIONS.map((opt) => (
+        <option key={opt} value={opt}>{SORT_LABELS[opt] ?? opt}</option>
+      ))}
+    </select>
   </div>
 );
 
-const FilterSidebar = () => (
-  <aside
-    className="hidden md:flex flex-col flex-shrink-0 bg-white border-r border-[#E0E0E0] overflow-y-auto"
-    style={{ width: "250px", padding: "20px 0" }}
-  >
-    <div className="flex items-center justify-between px-4 mb-5" style={{ paddingBottom: "8px" }}>
-      <span className="font-bold text-[#333333]" style={{ fontSize: "16px" }}>Filter By</span>
-      <button type="button" className="text-[#B069D6] hover:underline" style={{ fontSize: "12px" }}>Clear All</button>
-    </div>
-    {FILTER_SECTIONS.map((section) => (
-      <div key={section.title} className="border-b border-[#E0E0E0] px-4" style={{ paddingTop: "20px", paddingBottom: "20px" }}>
-        <p className="text-[#333333] font-normal mb-2" style={{ fontSize: "14px" }}>{section.title}</p>
-        {section.isRange ? (
-          <div className="space-y-2">
-            <div className="flex gap-2 items-center">
-              <input type="text" placeholder="Min." className="w-full border border-[#E0E0E0] rounded-[3px] px-2 py-1.5 text-[#333333]" style={{ fontSize: "12px" }} />
-              <input type="text" placeholder="Max." className="w-full border border-[#E0E0E0] rounded-[3px] px-2 py-1.5 text-[#333333]" style={{ fontSize: "12px" }} />
-            </div>
-            {section.range && <p className="text-[#333333]" style={{ fontSize: "12px" }}>{section.range}</p>}
-            <div className="h-2 bg-[#E0E0E0] rounded-full relative" style={{ backgroundColor: "#E0E0E0" }}>
-              <div className="absolute inset-y-0 left-0 w-1/2 bg-[#6A2E8D] rounded-full" />
-              <span className="absolute top-1/2 -translate-y-1/2 left-0 w-3 h-3 rounded-full bg-[#6A2E8D] border-2 border-white shadow" style={{ left: "0%" }} />
-              <span className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#6A2E8D] border-2 border-white shadow" style={{ left: "50%" }} />
-            </div>
-          </div>
-        ) : (
-          <ul className="space-y-2" style={{ marginTop: "8px" }}>
-            {(section.items || []).slice(0, 5).map((item, i) => (
-              <li key={item} className="flex items-center gap-2">
-                <input type="checkbox" id={`${section.title}-${i}`} className="rounded border-[#E0E0E0] text-[#6A2E8D]" />
-                <label htmlFor={`${section.title}-${i}`} className="text-[#333333] cursor-pointer" style={{ fontSize: "14px" }}>{item}{section.count && i === 0 ? ` (${section.count})` : ""}</label>
-              </li>
-            ))}
-            {section.items && section.items.length > 4 && (
-              <li><button type="button" className="text-[#B069D6] hover:underline" style={{ fontSize: "12px" }}>View All</button></li>
-            )}
-          </ul>
-        )}
+const FilterSidebar = ({ filters, onFilterChange, onClearAll }) => {
+  const { metalType, minPrice, maxPrice } = filters;
+  return (
+    <aside
+      className="hidden md:flex flex-col flex-shrink-0 bg-white border-r border-[#E0E0E0] overflow-y-auto"
+      style={{ width: "250px", padding: "20px 0" }}
+    >
+      <div className="flex items-center justify-between px-4 mb-5" style={{ paddingBottom: "8px" }}>
+        <span className="font-bold text-[#333333]" style={{ fontSize: "16px" }}>Filter By</span>
+        <button type="button" onClick={onClearAll} className="text-[#B069D6] hover:underline" style={{ fontSize: "12px" }}>Clear All</button>
       </div>
-    ))}
-  </aside>
-);
+      {/* Metal Type (API-backed) */}
+      <div className="border-b border-[#E0E0E0] px-4" style={{ paddingTop: "20px", paddingBottom: "20px" }}>
+        <p className="text-[#333333] font-normal mb-2" style={{ fontSize: "14px" }}>Metal</p>
+        <ul className="space-y-2" style={{ marginTop: "8px" }}>
+          {METAL_TYPES.map((metal) => (
+            <li key={metal} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="metalType"
+                id={`metal-${metal}`}
+                checked={metalType === metal}
+                onChange={() => onFilterChange({ metalType: metal })}
+                className="border-[#E0E0E0] text-[#6A2E8D"
+              />
+              <label htmlFor={`metal-${metal}`} className="text-[#333333] cursor-pointer capitalize" style={{ fontSize: "14px" }}>{metal}</label>
+            </li>
+          ))}
+          <li className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="metalType"
+              id="metal-all"
+              checked={!metalType}
+              onChange={() => onFilterChange({ metalType: undefined })}
+              className="border-[#E0E0E0] text-[#6A2E8D"
+            />
+            <label htmlFor="metal-all" className="text-[#333333] cursor-pointer" style={{ fontSize: "14px" }}>All</label>
+          </li>
+        </ul>
+      </div>
+      {/* Price range (API-backed) */}
+      <div className="border-b border-[#E0E0E0] px-4" style={{ paddingTop: "20px", paddingBottom: "20px" }}>
+        <p className="text-[#333333] font-normal mb-2" style={{ fontSize: "14px" }}>Price</p>
+        <div className="space-y-2">
+          <div className="flex gap-2 items-center">
+            <input
+              type="number"
+              placeholder="Min"
+              min={0}
+              value={minPrice ?? ""}
+              onChange={(e) => onFilterChange({ minPrice: e.target.value === "" ? undefined : Number(e.target.value) })}
+              className="w-full border border-[#E0E0E0] rounded-[3px] px-2 py-1.5 text-[#333333]"
+              style={{ fontSize: "12px" }}
+            />
+            <input
+              type="number"
+              placeholder="Max"
+              min={0}
+              value={maxPrice ?? ""}
+              onChange={(e) => onFilterChange({ maxPrice: e.target.value === "" ? undefined : Number(e.target.value) })}
+              className="w-full border border-[#E0E0E0] rounded-[3px] px-2 py-1.5 text-[#333333]"
+              style={{ fontSize: "12px" }}
+            />
+          </div>
+        </div>
+      </div>
+      {FILTER_SECTIONS.filter((s) => s.title !== "Price" && s.title !== "Material").map((section) => (
+        <div key={section.title} className="border-b border-[#E0E0E0] px-4" style={{ paddingTop: "20px", paddingBottom: "20px" }}>
+          <p className="text-[#333333] font-normal mb-2" style={{ fontSize: "14px" }}>{section.title}</p>
+          {section.isRange ? (
+            <div className="space-y-2">
+              <div className="flex gap-2 items-center">
+                <input type="text" placeholder="Min." className="w-full border border-[#E0E0E0] rounded-[3px] px-2 py-1.5 text-[#333333]" style={{ fontSize: "12px" }} />
+                <input type="text" placeholder="Max." className="w-full border border-[#E0E0E0] rounded-[3px] px-2 py-1.5 text-[#333333]" style={{ fontSize: "12px" }} />
+              </div>
+              {section.range && <p className="text-[#333333]" style={{ fontSize: "12px" }}>{section.range}</p>}
+            </div>
+          ) : (
+            <ul className="space-y-2" style={{ marginTop: "8px" }}>
+              {(section.items || []).slice(0, 5).map((item, i) => (
+                <li key={item} className="flex items-center gap-2">
+                  <input type="checkbox" id={`${section.title}-${i}`} className="rounded border-[#E0E0E0] text-[#6A2E8D]" />
+                  <label htmlFor={`${section.title}-${i}`} className="text-[#333333] cursor-pointer" style={{ fontSize: "14px" }}>{item}{section.count && i === 0 ? ` (${section.count})` : ""}</label>
+                </li>
+              ))}
+              {section.items && section.items.length > 4 && (
+                <li><button type="button" className="text-[#B069D6] hover:underline" style={{ fontSize: "12px" }}>View All</button></li>
+              )}
+            </ul>
+          )}
+        </div>
+      ))}
+    </aside>
+  );
+};
+
+const stopNav = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
 
 const ProductCard = ({ product }) => (
-  <div className="bg-white flex flex-col rounded-lg overflow-hidden">
+  <Link to={`/product/${product.id ?? product.name}`} className="bg-white flex flex-col rounded-lg overflow-hidden block">
     <div className="relative aspect-square bg-[#F5F0F8] overflow-hidden">
-      <img src={product.image} alt={product.name} className="w-full h-full object-cover object-center" />
+      <img src={product.image} alt={product.name} className="w-full h-full object-cover object-center" loading="lazy" />
       {product.badge && (
         <span className="absolute top-2 left-2 font-bold text-black rounded px-1.5 py-0.5 text-[10px] bg-[#FFD700]">
           {product.badge}
         </span>
       )}
-      <button type="button" className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-sm" aria-label="Add to wishlist">
+      <button type="button" onClick={stopNav} className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-sm" aria-label="Add to wishlist">
         <HeartOutlineIcon />
       </button>
-      <button type="button" className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-[#6A2E8D]" aria-label="Compare">
+      <button type="button" onClick={stopNav} className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-[#6A2E8D]" aria-label="Compare">
         <CompareIcon />
       </button>
     </div>
@@ -188,79 +274,231 @@ const ProductCard = ({ product }) => (
         <span className="font-bold text-[#4E0756] text-base md:text-lg">{product.price}</span>
         {product.original && <span className="text-[#B069D6] line-through text-sm">{product.original}</span>}
       </div>
-      <button type="button" className="text-[#B069D6] text-xs font-medium hover:underline w-fit text-left">
+      <button type="button" onClick={stopNav} className="text-[#B069D6] text-xs font-medium hover:underline w-fit text-left">
         Check Delivery Date
       </button>
       <p className="text-[#333333] text-sm truncate">{product.name}</p>
       <div className="flex items-center gap-2 mt-2 min-w-0">
-        <button type="button" className="flex-1 min-w-0 border border-[#B069D6] text-[#6A2E8D] font-semibold text-[10px] sm:text-xs py-2.5 rounded hover:bg-[#F8F2FC] transition-colors">
+        <button type="button" onClick={stopNav} className="flex-1 min-w-0 border border-[#B069D6] text-[#6A2E8D] font-semibold text-[10px] sm:text-xs py-2.5 rounded hover:bg-[#F8F2FC] transition-colors">
           <span className="block truncate">TRY AT HOME</span>
         </button>
-        <button type="button" className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded border-2 border-emerald-500 text-emerald-600 shrink-0 flex-shrink-0" aria-label="Video call">
+        <button type="button" onClick={stopNav} className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded border-2 border-emerald-500 text-emerald-600 shrink-0 flex-shrink-0" aria-label="Video call">
           <VideoCameraIcon />
         </button>
       </div>
     </div>
-  </div>
+  </Link>
 );
 
 const CATEGORY_TITLE = "Gemstone Jewellery";
-const DESIGN_COUNT = "1383 Designs";
 
-const MobileHeader = () => (
+const MobileHeader = ({ total, loading }) => (
   <div className="md:hidden px-4 py-4 pb-3 border-b border-[#E0E0E0] bg-white">
     <h1 className="text-[#333333] font-semibold text-lg">{CATEGORY_TITLE}</h1>
-    <p className="text-[#888888] text-sm mt-0.5">{DESIGN_COUNT}</p>
+    <p className="text-[#888888] text-sm mt-0.5">{loading ? "Loading…" : `${total} Designs`}</p>
   </div>
 );
 
-const MainContent = () => (
-  <div className="flex flex-1 min-h-0 bg-white">
-    <FilterSidebar />
-    <div className="flex-1 flex flex-col min-w-0">
-      <MobileHeader />
-      <MobileFilterBar />
-      <div className="flex flex-col px-3 md:px-6 py-4 md:py-6">
-        <div className="flex items-center justify-between mb-4 md:mb-5">
-          <span className="text-[#333333] text-sm hidden md:block">2345 results</span>
-          <div className="hidden md:flex items-center gap-1 text-[#333333] text-sm ml-auto">
-            Sort by: Recommended
-            <MdKeyboardArrowDown style={{ fontSize: 16 }} />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-          {MOCK_PRODUCTS.map((product, i) => (
-            <ProductCard key={i} product={product} />
-          ))}
-        </div>
-        <div className="flex flex-col items-center gap-3 md:gap-4 mt-6 md:mt-8 mb-8 md:mb-10">
-          <button
-            type="button"
-            className="text-white font-normal hover:opacity-90 transition-opacity rounded-[5px] py-3 px-6 md:py-3 md:px-8 text-sm"
-            style={{ backgroundColor: "#6A2E8D" }}
-          >
-            Load More
-          </button>
-          <p className="text-[#333333] text-xs md:text-sm text-center px-2">Showing 1-20 of 2345 products</p>
-          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-2">
-            <span className="flex items-center justify-center rounded-full bg-[#6A2E8D] text-white w-9 h-9 md:w-6 md:h-6 text-xs">1</span>
-            <a href="#page2" className="flex items-center justify-center w-9 h-9 md:w-6 md:h-6 text-[#333333] hover:bg-[#F8F2FC] rounded-full text-xs">2</a>
-            <a href="#page3" className="flex items-center justify-center w-9 h-9 md:w-6 md:h-6 text-[#333333] hover:bg-[#F8F2FC] rounded-full text-xs">3</a>
-            <span className="text-[#333333] px-1 text-xs">...</span>
-            <a href="#next" className="flex items-center justify-center w-9 h-9 md:w-6 md:h-6 text-[#333333] hover:bg-[#F8F2FC] rounded-full">
-              <ICON d="M9 5l7 7-7 7" className="w-4 h-4" />
-            </a>
+const Jewellery = () => {
+  const [products, setProducts] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [limit] = useState(DEFAULT_LIMIT);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    sortBy: "latest",
+    metalType: undefined,
+    categoryId: undefined,
+    minPrice: undefined,
+    maxPrice: undefined,
+  });
+  const sentinelRef = useRef(null);
+  const filtersRef = useRef(filters);
+
+  filtersRef.current = filters;
+
+  const hasMore = page < totalPages && totalPages > 0;
+
+  const loadProducts = useCallback(async (pageNum, merge = false) => {
+    const currentFilters = filtersRef.current;
+    const isNextPage = merge && pageNum > 1;
+    if (isNextPage) setLoadingMore(true);
+    else setLoading(true);
+    setError(null);
+
+    try {
+      const payload = {
+        page: pageNum,
+        limit,
+        sortBy: currentFilters.sortBy,
+        metalType: currentFilters.metalType,
+        categoryId: currentFilters.categoryId,
+        minPrice: currentFilters.minPrice,
+        maxPrice: currentFilters.maxPrice,
+      };
+      const result = await productService.getProducts(payload);
+      const normalized = (result.items || []).map(normalizeProduct).filter(Boolean);
+
+      if (merge) {
+        setProducts((prev) => [...prev, ...normalized]);
+      } else {
+        setProducts(normalized);
+      }
+      setTotal(result.total ?? 0);
+      setPage(result.page ?? pageNum);
+      setTotalPages(result.totalPages ?? 0);
+    } catch (err) {
+      setError(err?.message ?? "Failed to load products");
+      if (!merge) setProducts([]);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [limit]);
+
+  useEffect(() => {
+    loadProducts(1, false);
+  }, [filters.sortBy, filters.metalType, filters.categoryId, filters.minPrice, filters.maxPrice]);
+
+  useEffect(() => {
+    if (!sentinelRef.current || loading || loadingMore || !hasMore) return;
+    const el = sentinelRef.current;
+    const currentPage = page;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry?.isIntersecting) {
+          loadProducts(currentPage + 1, true);
+        }
+      },
+      { rootMargin: "200px", threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, page, loadProducts]);
+
+  const handleFilterChange = useCallback((partial) => {
+    setFilters((prev) => ({ ...prev, ...partial }));
+  }, []);
+
+  const handleClearAll = useCallback(() => {
+    setFilters({
+      sortBy: "latest",
+      metalType: undefined,
+      categoryId: undefined,
+      minPrice: undefined,
+      maxPrice: undefined,
+    });
+  }, []);
+
+  const handleLoadMore = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+    const next = page + 1;
+    setPage(next);
+    loadProducts(next, true);
+  }, [page, hasMore, loadingMore, loadProducts]);
+
+  const designCount = total;
+  const displayProducts = !loading && products.length === 0 ? DEMO_PRODUCTS : products;
+  const showingText = products.length > 0
+    ? `Showing 1-${products.length} of ${total} products`
+    : displayProducts.length > 0
+      ? "Showing demo products"
+      : "No products";
+
+  return (
+    <div
+      id="top"
+      className="min-h-screen flex flex-col bg-white text-[#333333] max-w-[100vw] overflow-x-hidden"
+      style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
+    >
+      <BreadcrumbBar />
+      <div className="flex flex-1 min-h-0 bg-white">
+        <FilterSidebar filters={filters} onFilterChange={handleFilterChange} onClearAll={handleClearAll} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <MobileHeader total={designCount} loading={loading} />
+          <MobileFilterBar sortBy={filters.sortBy} onSortChange={(v) => handleFilterChange({ sortBy: v })} onOpenFilters={() => {}} />
+          <div className="flex flex-col px-3 md:px-6 py-4 md:py-6">
+            <div className="flex items-center justify-between mb-4 md:mb-5">
+              <span className="text-[#333333] text-sm hidden md:block">
+                {loading ? "Loading…" : `${total} results`}
+              </span>
+              <div className="hidden md:flex items-center gap-1 text-[#333333] text-sm ml-auto">
+                <label htmlFor="sort-desktop" className="sr-only">Sort by</label>
+                <select
+                  id="sort-desktop"
+                  value={filters.sortBy}
+                  onChange={(e) => handleFilterChange({ sortBy: e.target.value })}
+                  className="border-0 bg-transparent cursor-pointer text-[#333333] focus:outline-none"
+                >
+                  {SORT_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>{SORT_LABELS[opt] ?? opt}</option>
+                  ))}
+                </select>
+                <MdKeyboardArrowDown style={{ fontSize: 16 }} />
+              </div>
+            </div>
+
+            {/* {error && (
+              <div className="py-8 text-center text-red-600 text-sm">
+                {error}
+              </div>
+            )} */}
+
+            {(
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+                  {displayProducts.map((product) => (
+                    <ProductCard key={product.id ?? product.name} product={product} />
+                  ))}
+                </div>
+
+                {loading && products.length === 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 py-8">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="bg-[#F5F0F8] aspect-square rounded-lg animate-pulse" />
+                    ))}
+                  </div>
+                )}
+
+                {!loading && products.length === 0 && !error && displayProducts.length === 0 && (
+                  <div className="py-12 text-center text-[#888888] text-sm">
+                    No products found. Try adjusting filters.
+                  </div>
+                )}
+
+                <div ref={sentinelRef} className="h-2 w-full" aria-hidden />
+
+                <div className="flex flex-col items-center gap-3 md:gap-4 mt-6 md:mt-8 mb-8 md:mb-10">
+                  {hasMore && (
+                    <button
+                      type="button"
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                      className="text-white font-normal hover:opacity-90 transition-opacity rounded-[5px] py-3 px-6 md:py-3 md:px-8 text-sm disabled:opacity-70"
+                      style={{ backgroundColor: "#6A2E8D" }}
+                    >
+                      {loadingMore ? "Loading…" : "Load More"}
+                    </button>
+                  )}
+                  <p className="text-[#333333] text-xs md:text-sm text-center px-2">{showingText}</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
+      <FooterSection />
+      <LegalSection />
     </div>
-  </div>
-);
+  );
+};
 
 const FooterSection = () => (
-  <footer
-    className="bg-[#F8F2FC] py-8 md:py-12 lg:py-[50px] px-4 md:px-6 lg:px-[35px]"
-  >
+  <footer className="bg-[#F8F2FC] py-8 md:py-12 lg:py-[50px] px-4 md:px-6 lg:px-[35px]">
     <div className="max-w-[1400px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 lg:gap-12">
       {FOOTER_COLUMNS.map((col) => (
         <div key={col.heading}>
@@ -317,44 +555,11 @@ const FooterSection = () => (
 );
 
 const LegalSection = () => (
-  <div
-    className="bg-white text-[#888888] py-6 md:py-10 px-4 md:px-6 lg:px-[35px]"
-    style={{ fontSize: "10px", lineHeight: 1.6 }}
-  >
+  <div className="bg-white text-[#888888] py-6 md:py-10 px-4 md:px-6 lg:px-[35px]" style={{ fontSize: "10px", lineHeight: 1.6 }}>
     <div className="max-w-[900px] mx-auto space-y-4">
-      <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-      </p>
-      <p>
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
       <p className="text-center mt-6" style={{ fontSize: "12px" }}>© 2026 Corazor. All Rights Reserved.</p>
     </div>
-  </div>
-);
-
-const ScrollToTopButton = () => (
-  <a
-    href="#top"
-    className="fixed bottom-8 right-8 z-50 flex items-center justify-center rounded-full bg-[#6A2E8D] text-white hover:opacity-90 shadow-lg transition-opacity"
-    style={{ width: "44px", height: "44px" }}
-    aria-label="Scroll to top"
-  >
-    <ArrowUpIcon className="w-5 h-5" />
-  </a>
-);
-
-const Jewellery = () => (
-  <div
-    id="top"
-    className="min-h-screen flex flex-col bg-white text-[#333333] max-w-[100vw] overflow-x-hidden"
-    style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
-  >
-    <BreadcrumbBar />
-    <MainContent />
-    <FooterSection />
-    <LegalSection />
-    {/* <ScrollToTopButton /> */}
   </div>
 );
 

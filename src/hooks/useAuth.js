@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useCallback, useRef, useEffect } from 'react';
-import { clearUser, setUserData, mergeAuthState } from '../store/slices/userAuthSlice';
+import { clearUser, getUserData } from '../store/slices/userAuthSlice';
 import Cookies from 'js-cookie';
 
 /** In-flight promise refs for deduplicating concurrent API calls */
@@ -24,53 +24,6 @@ export const useAuth = () => {
     localStorage.clear();
   }, [dispatch]);
 
-  const setUser = useCallback(
-    (userData) => {
-      const { token: tradeToken, refreshToken: tradeRefreshToken, user: tradeUser } = userData;
-
-      if (tradeToken) Cookies.set('token', tradeToken);
-      if (tradeRefreshToken) Cookies.set('refreshToken', tradeRefreshToken);
-      dispatch(
-        setUserData({
-          userData: tradeUser,
-          token: tradeToken,
-          refreshToken: tradeRefreshToken,
-        })
-      );
-    },
-    [dispatch]
-  );
-
-  // const fetchUserData = useCallback(async () => {
-  //   if (!token || user) return Promise.resolve(user ?? null);
-
-  //   if (userDataPromiseRef.current) {
-  //     return userDataPromiseRef.current;
-  //   }
-
-  //   const promise = (async () => {
-  //     try {
-  //       const response = await authService.getUser();
-  //       if (!isMountedRef.current) return null;
-  //       if (response?.success && response?.data?.user) {
-  //         dispatch(mergeAuthState({ userData: response.data.user }));
-  //         return response.data.user;
-  //       }
-  //       return null;
-  //     } catch (error) {
-  //       if (isMountedRef.current) {
-  //         console.error('[useAuth] Error fetching user data:', error);
-  //       }
-  //       return null;
-  //     } finally {
-  //       userDataPromiseRef.current = null;
-  //     }
-  //   })();
-
-  //   userDataPromiseRef.current = promise;
-  //   return promise;
-  // }, [token, user, dispatch]);
-
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -78,18 +31,17 @@ export const useAuth = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (token && !user) {
-  //     fetchUserData();
-  //   }
-  // }, [token, user, fetchUserData]);
+  useEffect(() => {
+    if (token && !user) {
+      dispatch(getUserData());
+    }
+  }, [token, user, dispatch]);
 
   return {
     userData: user,
     token,
     isLoggedIn: Boolean(token),
     clear,
-    setUser,
   };
 };
 

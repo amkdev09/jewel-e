@@ -122,7 +122,7 @@ const badges = [
     {
         icon: (
             <div
-                class="block mx-auto w-[43px] h-[29px] bg-[url('https://assets.cltstatic.com/images/responsive/cart-checkout.png?v1.0')] bg-[-136px_-385px] bg-[length:340px]"
+                className="block mx-auto w-[43px] h-[29px] bg-[url('https://assets.cltstatic.com/images/responsive/cart-checkout.png?v1.0')] bg-[-136px_-385px] bg-[length:340px]"
             ></div>
         ),
         line1: "BIS 100% Hall",
@@ -131,7 +131,7 @@ const badges = [
     {
         icon: (
             <div
-                class="block mx-auto w-[66px] h-[33px] bg-[url('https://assets.cltstatic.com/images/responsive/cart-checkout.png?v1.0')] bg-[-199px_-368px] bg-[length:340px]"
+                className="block mx-auto w-[66px] h-[33px] bg-[url('https://assets.cltstatic.com/images/responsive/cart-checkout.png?v1.0')] bg-[-199px_-368px] bg-[length:340px]"
             ></div>
         ),
         line1: "Trust of Tanishq",
@@ -140,7 +140,7 @@ const badges = [
     {
         icon: (
             <div
-                class="block mx-auto w-[51px] h-[26px] bg-[url('https://assets.cltstatic.com/images/responsive/cart-checkout.png?v1.0')] bg-[-91px_-424px] bg-[length:340px]"
+                className="block mx-auto w-[51px] h-[26px] bg-[url('https://assets.cltstatic.com/images/responsive/cart-checkout.png?v1.0')] bg-[-91px_-424px] bg-[length:340px]"
             ></div>
         ),
         line1: "100% Certified by",
@@ -158,7 +158,7 @@ const EmptyStateSection = () => (
             Let&apos;s do some retail therapy.
         </p>
         <Link
-            to="/"
+            to="/jewellery"
             className="flex items-center justify-center h-[42px] w-full max-w-[350px] font-inter-semibold text-white uppercase text-base rounded-[8px] box-border"
             style={{
                 background: "linear-gradient(90deg, rgb(229, 110, 235) 0%, rgb(136, 99, 251) 100%)",

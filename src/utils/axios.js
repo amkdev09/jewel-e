@@ -1,9 +1,14 @@
 import axios from "axios";
 import Cookies from "js-cookie";
-import { authRouters } from "../router/router.config";
+import { commonRouters } from "../router/router.config";
+
+// In dev, use relative /api so Vite proxy forwards to backend (avoids CORS).
+const baseURL = import.meta.env.DEV
+  ? '/api'
+  : `${import.meta.env.VITE_API_BASE_URL || ''}/api`
 
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`,
+  baseURL,
   timeout: 2800000,
   headers: {
     "Content-Type": "application/json",
@@ -12,14 +17,6 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    if (config.skipAuth === true) {
-      if (typeof config.headers?.delete === "function") {
-        config.headers.delete("Authorization");
-      } else {
-        delete config.headers.Authorization;
-      }
-      return config;
-    }
     const token = Cookies.get("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -29,7 +26,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const AUTH_PAGE_PATHS = new Set(authRouters.map((r) => r.path));
+const AUTH_PAGE_PATHS = new Set(commonRouters.map((r) => r.path));
 
 const shouldSkipRefresh = (config) =>
   !config || config._retry === true || config.skipAuth === true;
