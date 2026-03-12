@@ -7,11 +7,11 @@ export const commonRouters = [
   },
   {
     path: "/signup",
-    component: asyncComponent(() => import("../pages/auth/Signup.jsx")),
+    component: asyncComponent(() => import("../pages/auth/signup.jsx")),
   },
   {
     path: "/login",
-    component: asyncComponent(() => import("../pages/auth/Login.jsx")),
+    component: asyncComponent(() => import("../pages/auth/login.jsx")),
     isBottomNav: false,
   },
   {
@@ -20,15 +20,15 @@ export const commonRouters = [
   },
   {
     path: "/treasure",
-    component: asyncComponent(() => import("../pages/main/TreasurePage.jsx")),
+    component: asyncComponent(() => import("../pages/main/treasurePage.jsx")),
   },
   {
     path: "/gold",
-    component: asyncComponent(() => import("../pages/main/Gold.jsx")),
+    component: asyncComponent(() => import("../pages/main/gold.jsx")),
   },
   {
     path: "/stores",
-    component: asyncComponent(() => import("../pages/main/Stores.jsx")),
+    component: asyncComponent(() => import("../pages/main/stores.jsx")),
   },
   {
     path: "/try-at-home",
