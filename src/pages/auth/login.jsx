@@ -128,10 +128,7 @@ const Login = () => {
 
               const response = await authService.login(payload);
 
-              if (!response?.success) {
-                showSnackbar(response?.message || "Login failed. Please try again.", "error");
-                setSubmitting(false);
-
+              if (response?.success) {
                 const token = response?.data?.token;
                 const refreshToken = response?.data?.refreshToken;
                 const user = response?.data?.user;
@@ -149,8 +146,11 @@ const Login = () => {
                     // ignore storage errors
                   }
                 }
+                showSnackbar(response?.message || "Login successful.", "success");
 
                 navigate("/");
+              } else {
+                showSnackbar(response?.message || "Login failed. Please try again.", "error");
               }
 
             } catch (error) {

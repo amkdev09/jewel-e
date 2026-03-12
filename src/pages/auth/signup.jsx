@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
@@ -8,7 +8,6 @@ import { FaCheck } from "react-icons/fa6";
 import authService from "../../services/authService";
 import useSnackbar from "../../hooks/useSnackbar";
 import RedditPasswordInput from "../../components/input/password";
-import OtpVerificationModal from "../../components/OtpVerificationModal";
 
 // Pixel-perfect tokens (CaratLane reference)
 const BG_PAGE = "#FFFFFF";
@@ -64,8 +63,7 @@ function normalizePhoneForApi(mobile) {
 const Signup = () => {
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
-  const [otpModalOpen, setOtpModalOpen] = useState(false);
-  const [pendingSignupValues, setPendingSignupValues] = useState(null);
+  const defaultCountryCode = "+91";
 
   const validationSchema = Yup.object().shape({
     firstName: Yup.string().trim().required("First name is required"),
@@ -78,7 +76,8 @@ const Signup = () => {
       .trim()
       .matches(/^[0-9]{10}$/, "Enter a valid 10 digit mobile number")
       .required("Mobile number is required"),
-    gender: Yup.string().oneOf(["male", "female", "others", ""], "Invalid gender"),
+    gender: Yup.string().oneOf(["male", "female", "other", ""], "Invalid gender"),
+    countryCode: Yup.string().default(defaultCountryCode),
     password: Yup.string()
       .required("Password is required")
       .min(8, "Password must be at least 8 characters"),
@@ -151,6 +150,7 @@ const Signup = () => {
         <Formik
           initialValues={{
             mobile: "",
+            countryCode: defaultCountryCode,
             email: "",
             firstName: "",
             lastName: "",
@@ -163,23 +163,32 @@ const Signup = () => {
           validateOnChange={false}
           onSubmit={async (values, helpers) => {
             const { setSubmitting } = helpers;
-            const phoneForApi = normalizePhoneForApi(values.mobile);
             try {
-              const sendOtpResponse = await authService.sendOtp({ phone: phoneForApi });
+              const genderForApi = values.gender?.trim() || "prefer_not_to_say";
+              const payload = {
+                name: `${values.firstName.trim()} ${values.lastName.trim()}`.trim(),
+                email: values.email.trim(),
+                countryCode: values.countryCode,
+                phone: normalizePhoneForApi(values.mobile),
+                password: values.password,
+                gender: genderForApi,
+              };
 
-              if (!sendOtpResponse?.success) {
-                const message = sendOtpResponse?.message || "Failed to send OTP. Please try again.";
+              const response = await authService.register(payload);
+
+              if (response?.success === false) {
+                const message = response?.message || "Registration failed. Please try again.";
                 showSnackbar(message, "error");
                 return;
               }
 
-              setPendingSignupValues(values);
-              setOtpModalOpen(true);
+              showSnackbar("Registered successfully. Please log in.", "success");
+              navigate("/login");
             } catch (error) {
               const message =
                 error?.response?.data?.message ||
                 error?.message ||
-                "Failed to send OTP. Please try again.";
+                "Registration failed. Please try again.";
               showSnackbar(message, "error");
             } finally {
               setSubmitting(false);
@@ -202,6 +211,8 @@ const Signup = () => {
                   name="mobile"
                   value={values.mobile}
                   onChange={handleChange}
+                  defaultCountryCode={defaultCountryCode}
+                  onCountryChange={handleChange}
                   onBlur={handleBlur}
                   placeholder="Mobile Number"
                   fullWidth={true}
@@ -284,8 +295,8 @@ const Signup = () => {
                   <input
                     type="radio"
                     name="gender"
-                    value="others"
-                    checked={values.gender === "others"}
+                    value="other"
+                    checked={values.gender === "other"}
                     onChange={handleChange}
                     className="w-4 h-4"
                     style={{ accentColor: "var(--primary-color-b)" }}
@@ -363,45 +374,6 @@ const Signup = () => {
           </Link>
         </p>
       </div>
-
-      <OtpVerificationModal
-        open={otpModalOpen}
-        phone={pendingSignupValues?.mobile ?? ""}
-        onClose={() => {
-          setOtpModalOpen(false);
-          setPendingSignupValues(null);
-        }}
-        onChangeMobile={() => {
-          setOtpModalOpen(false);
-          setPendingSignupValues(null);
-        }}
-        onVerificationSuccess={async () => {
-          if (!pendingSignupValues) return;
-          const payload = {
-            name: `${pendingSignupValues.firstName.trim()} ${pendingSignupValues.lastName.trim()}`.trim(),
-            email: pendingSignupValues.email.trim(),
-            phone: normalizePhoneForApi(pendingSignupValues.mobile),
-            password: pendingSignupValues.password,
-          };
-          try {
-            const response = await authService.register(payload);
-            if (response?.success === false) {
-              const message = response?.message || "Registration failed. Please try again.";
-              showSnackbar(message, "error");
-              return;
-            }
-            setOtpModalOpen(false);
-            setPendingSignupValues(null);
-            navigate("/login");
-          } catch (error) {
-            const message =
-              error?.response?.data?.message ||
-              error?.message ||
-              "Registration failed. Please try again.";
-            showSnackbar(message, "error");
-          }
-        }}
-      />
 
       <style>{`input::placeholder { color: ${PLACEHOLDER}; }`}</style>
     </div>

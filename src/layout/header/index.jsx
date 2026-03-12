@@ -4,6 +4,7 @@ import "./header.scss";
 import { PiStorefront } from "react-icons/pi";
 import { IoIosSearch } from "react-icons/io";
 import avatar from "../../assets/images/avatar.png";
+import useAuth from "../../hooks/useAuth";
 
 const ring = "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 
@@ -163,6 +164,7 @@ const MegaMenu = ({ isOpen, onClose, onEnterPanel, navigate }) => {
 
 const Header = () => {
     const navigate = useNavigate();
+    const { isLoggedIn, userData } = useAuth();
     const [activeNavItem, setActiveNavItem] = useState(null);
     const [megaMenuOpen, setMegaMenuOpen] = useState(false);
     const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
@@ -329,22 +331,64 @@ const Header = () => {
                                     style={{ boxShadow: "0 10px 40px rgba(0,0,0,0.12)" }}
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    <h1 className="text-[1.6rem] font-inter-semibold font-semibold text-[#1f2937] mb-1">Your Account</h1>
-                                    <p className="text-sm text-[#6b7280] mb-5">Access account & manage your orders.</p>
-                                    <div className="flex gap-[18px]">
-                                        <Link
-                                            to="/signup"
-                                            className="block rounded-[6px] text-[0.875rem] text-center text-[#231535] w-[100px] h-[36px] leading-[36px]"
-                                            style={{ background: "linear-gradient(to right, #e56eeb, #8863fb)" }}
-                                        >
-                                            Sign Up
-                                        </Link>
-                                        <Link
-                                            to="/login"
-                                            className="block border border-[#de57e5] text-[0.875rem] rounded-[6px] text-center text-[#231535] w-[100px] h-[36px] leading-[36px] mr-[18px]">
-                                            Log In
-                                        </Link>
-                                    </div>
+                                    {isLoggedIn ?
+                                        <>
+                                            <div className="mb-4">
+                                                <h1 className="text-lg font-inter-semibold text-[var(--primary-color-a)] leading-tight">
+                                                    {userData?.name || "Unknown Name"}
+                                                </h1>
+                                                <p className="text-sm text-[var(--primary-color-c)] mt-0.5">
+                                                    {userData?.email || "Unknown Email"}
+                                                </p>
+                                                <div className="mt-4 h-[1px] w-full bg-[#a855f7] rounded-full" />
+                                            </div>
+                                            <ul className="space-y-2 text-sm font-inter-regular tracking-wide">
+                                                <li>
+                                                    <Link
+                                                        to="/orders"
+                                                        className="block py-0.5 text-[rgb(35, 21, 53)] uppercase hover:text-[var(--primary-color-a)]"
+                                                    >
+                                                        MY ACCOUNTS
+                                                    </Link>
+                                                </li>
+                                                <li>
+                                                    <Link
+                                                        to="/our-story"
+                                                        className="block py-0.5 text-[rgb(35, 21, 53)] uppercase hover:text-[var(--primary-color-a)]"
+                                                    >
+                                                        OUR STORY
+                                                    </Link>
+                                                </li>
+                                                <li>
+                                                    <Link
+                                                        to="/logout"
+                                                        className="block py-0.5 text-[rgb(35, 21, 53)] uppercase hover:text-[var(--primary-color-a)]"
+                                                    >
+                                                        LOGOUT
+                                                    </Link>
+                                                </li>
+                                            </ul>
+                                        </>
+                                        :
+                                        <>
+                                            <h1 className="text-[1.6rem] font-inter-semibold font-semibold text-[#1f2937] mb-1">Your Account</h1>
+                                            <p className="text-sm text-[#6b7280] mb-5">Access account & manage your orders.</p>
+                                            <div className="flex gap-[18px]">
+                                                <Link
+                                                    to="/signup"
+                                                    className="block rounded-[6px] text-[0.875rem] text-center font-inter-semibold text-[#fff] w-[100px] h-[36px] leading-[36px]"
+                                                    style={{ background: "linear-gradient(to right, #e56eeb, #8863fb)" }}
+                                                >
+                                                    Sign Up
+                                                </Link>
+                                                <Link
+                                                    to="/login"
+                                                    className="block border border-[#de57e5] text-[0.875rem] rounded-[6px] text-center font-inter-semibold text-[#231535] w-[100px] h-[36px] leading-[36px] mr-[18px]">
+                                                    Log In
+                                                </Link>
+                                            </div>
+                                        </>
+                                    }
                                 </div>
                             )}
                         </div>
@@ -443,7 +487,7 @@ const Header = () => {
                 </div>
                 <MegaMenu isOpen={megaMenuOpen} onClose={closeMega} onEnterPanel={cancelClose} navigate={navigate} />
             </nav>
-        </header>
+        </header >
     );
 };
 

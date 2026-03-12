@@ -13,8 +13,8 @@ export const useAuth = () => {
   const cookieToken = Cookies.get('token');
 
   const data = useSelector((state) => state.userAuth);
-  const user = data?.userData;
-  const token = data?.token ?? cookieToken;
+  const user = JSON.parse(localStorage.getItem('user'));
+  const token = cookieToken;
 
   const clear = useCallback(() => {
     userDataPromiseRef.current = null;

@@ -20,9 +20,9 @@ function formatResendTimer(seconds) {
 
 const OtpVerificationModal = ({
   open,
-  phone,
+  email,
   onClose,
-  onChangeMobile,
+  onChangeEmail,
   onVerificationSuccess,
 }) => {
   const { showSnackbar } = useSnackbar();
@@ -34,9 +34,10 @@ const OtpVerificationModal = ({
 
   const inputRefs = useRef([]);
 
-  const phoneDigits = (phone || "").replace(/\D/g, "");
-  const phoneForApi =
-    phoneDigits.length > 10 ? phoneDigits.slice(-10) : phoneDigits;
+  const emailForApi = (email || "").trim().toLowerCase();
+
+  const extractApiMessage = (err, fallback) =>
+    err?.response?.data?.message || err?.message || fallback;
 
   const validationSchema = Yup.object({
     otp: Yup.string()
@@ -52,7 +53,8 @@ const OtpVerificationModal = ({
 
       try {
         const response = await authService.verifyOtp({
-          phone: phoneForApi,
+          type: "email",
+          email: emailForApi,
           otp: values.otp,
         });
 
@@ -64,12 +66,7 @@ const OtpVerificationModal = ({
         onVerificationSuccess();
         showSnackbar("Phone verified successfully.", "success");
       } catch (err) {
-        showSnackbar(
-          err?.response?.data?.message ||
-            err?.message ||
-            "Invalid OTP. Please try again.",
-          "error"
-        );
+        showSnackbar(extractApiMessage(err, "Invalid OTP. Please try again."), "error");
         formik.setFieldValue("otp", "");
       } finally {
         setLoading(false);
@@ -83,10 +80,11 @@ const OtpVerificationModal = ({
     formik.resetForm();
     setResendTimer(RESEND_COOLDOWN_SEC);
 
-    setTimeout(() => {
+    const t = setTimeout(() => {
       inputRefs.current[0]?.focus();
     }, 200);
-  }, [open, phone]);
+    return () => clearTimeout(t);
+  }, [open, email]);
 
   useEffect(() => {
     if (resendTimer <= 0) return;
@@ -104,7 +102,10 @@ const OtpVerificationModal = ({
     setResendLoading(true);
 
     try {
-      const response = await authService.resendOtp({ phone: phoneForApi });
+      const response = await authService.resendOtp({
+        type: "email",
+        email: emailForApi,
+      });
 
       if (!response?.success) {
         showSnackbar(response?.message || "Failed to resend OTP.", "error");
@@ -114,10 +115,7 @@ const OtpVerificationModal = ({
       showSnackbar("OTP sent successfully.", "success");
       setResendTimer(RESEND_COOLDOWN_SEC);
     } catch (err) {
-      showSnackbar(
-        err?.response?.data?.message || "Failed to resend OTP.",
-        "error"
-      );
+      showSnackbar(extractApiMessage(err, "Failed to resend OTP."), "error");
     } finally {
       setResendLoading(false);
     }
@@ -178,7 +176,7 @@ const OtpVerificationModal = ({
     }
   };
 
-  if (!phone) return null;
+  if (!email) return null;
 
   return (
     <Modal
@@ -212,7 +210,7 @@ const OtpVerificationModal = ({
           <Close />
         </IconButton>
 
-        {/* Phone */}
+        {/* Email */}
         <p
           style={{
             fontSize: 18,
@@ -220,7 +218,7 @@ const OtpVerificationModal = ({
             textAlign: "center",
           }}
         >
-          {phone}
+          {email}
         </p>
 
         <p
@@ -231,9 +229,9 @@ const OtpVerificationModal = ({
             marginBottom: 20,
           }}
         >
-          Enter OTP sent to mobile number{" "}
+          Enter OTP sent to email{" "}
           <button
-            onClick={onChangeMobile}
+            onClick={onChangeEmail}
             style={{
               background: "none",
               border: "none",
@@ -242,7 +240,7 @@ const OtpVerificationModal = ({
               fontWeight: 600,
             }}
           >
-            Change Mobile
+            Change Email
           </button>
         </p>
 

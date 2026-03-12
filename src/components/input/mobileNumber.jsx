@@ -66,6 +66,7 @@ const RedditTextField = styled(TextField)(({ hasError }) => ({
 }));
 
 const RedditPhoneInput = ({
+    defaultCountryCode,
     label,
     id,
     name,
@@ -77,8 +78,7 @@ const RedditPhoneInput = ({
     helperText,
     fullWidth = true,
     placeholder,
-    countryCode, // optional external dial code like "+91"
-    onCountryChange, // callback when a country is selected
+    onCountryChange,
     ...rest
 }) => {
     const [open, setOpen] = useState(false);
@@ -113,10 +113,10 @@ const RedditPhoneInput = ({
 
                 setCountries(formatted);
 
-                if (countryCode) {
+                if (defaultCountryCode) {
                     const match =
-                        formatted.find((c) => c.dialCode === countryCode) ||
-                        formatted.find((c) => c.dialCode.replace("+", "") === countryCode);
+                        formatted.find((c) => c.dialCode === defaultCountryCode) ||
+                        formatted.find((c) => c.dialCode.replace("+", "") === defaultCountryCode);
                     if (match) {
                         setSelectedCountry(match);
                     }
@@ -127,7 +127,7 @@ const RedditPhoneInput = ({
         };
 
         fetchCountries();
-    }, [countryCode]);
+    }, [defaultCountryCode]);
 
     const filtered = countries.filter((c) =>
         c.name.toLowerCase().includes(search.toLowerCase())
@@ -135,9 +135,7 @@ const RedditPhoneInput = ({
 
     const handleCountrySelect = (country) => {
         setSelectedCountry(country);
-        if (onCountryChange) {
-            onCountryChange(country);
-        }
+        onCountryChange({ target: { name: "countryCode", value: country.dialCode } });
         handleClose();
     };
 
