@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import productService from "../../services/productSerive";
-import { SORT_OPTIONS, METAL_TYPES, DEFAULT_LIMIT } from "../../services/productSerive";
+import productService from "../../../services/productSerive";
+import { SORT_OPTIONS, METAL_TYPES, DEFAULT_LIMIT } from "../../../services/productSerive";
 
 const PLACEHOLDER_IMAGE =
   "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
@@ -18,7 +18,7 @@ const ICON = ({ d, className = "", viewBox = "0 0 24 24", fill = "none", stroke 
 const SearchIcon = () => <ICON d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />;
 const HeartIcon = () => <ICON d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />;
 const HeartOutlineIcon = () => (
-  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="white" strokeWidth={2} viewBox="0 0 24 24">
+  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="var(--primary-color-a)" strokeWidth={2} viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
   </svg>
 );
@@ -75,30 +75,6 @@ const FOOTER_COLUMNS = [
 
 const SORT_LABELS = { latest: "Recommended", price_asc: "Price: Low to High", price_desc: "Price: High to Low" };
 
-/** Demo products shown when API returns no items */
-const DEMO_PRODUCTS = [
-  {
-    id: "demo-1",
-    name: "Tisya Diamond Gemstone Pendant Necklace",
-    price: "₹78,365",
-    original: "₹83,654",
-    save: "₹3,000",
-    exclusive: true,
-    badge: "NEW",
-    image: PLACEHOLDER_IMAGE,
-  },
-  {
-    id: "demo-2",
-    name: "Soul Bliss Gemstone Pendant Necklace",
-    price: "₹65,420",
-    original: "₹72,000",
-    save: null,
-    exclusive: false,
-    badge: null,
-    image: PLACEHOLDER_IMAGE,
-  },
-];
-
 /** Format number as INR for display */
 function formatPrice(value) {
   if (value == null || Number.isNaN(Number(value))) return null;
@@ -109,8 +85,8 @@ function formatPrice(value) {
 function normalizeProduct(item) {
   if (!item || typeof item !== "object") return null;
   const name = item.name ?? item.title ?? "";
-  const priceNum = item.price ?? item.salePrice ?? item.sellingPrice ?? 0;
-  const originalNum = item.originalPrice ?? item.mrp ?? item.price ?? null;
+  const priceNum = item.price ?? item.salePrice ?? item.sellingPrice ?? item.basePrice ?? 0;
+  const originalNum = item.originalPrice ?? item.mrp ?? item.price ?? item.basePrice ?? null;
   const price = formatPrice(priceNum) ?? "₹0";
   const original = originalNum != null && Number(originalNum) > Number(priceNum) ? formatPrice(originalNum) : null;
   const saveNum = originalNum != null && Number(originalNum) > Number(priceNum) ? Number(originalNum) - Number(priceNum) : null;
@@ -402,12 +378,11 @@ const Jewellery = () => {
   }, [page, hasMore, loadingMore, loadProducts]);
 
   const designCount = total;
-  const displayProducts = !loading && products.length === 0 ? DEMO_PRODUCTS : products;
   const showingText = products.length > 0
     ? `Showing 1-${products.length} of ${total} products`
-    : displayProducts.length > 0
-      ? "Showing demo products"
-      : "No products";
+    : loading
+      ? "Loading products…"
+      : "No products found";
 
   return (
     <div
@@ -450,13 +425,19 @@ const Jewellery = () => {
 
             {(
               <>
+                {error && (
+                  <div className="py-4 text-center text-red-600 text-sm">
+                    {error}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-                  {displayProducts.map((product) => (
+                  {products.map((product) => (
                     <ProductCard key={product.id ?? product.name} product={product} />
                   ))}
                 </div>
 
-                {loading && products.length === 0 && (
+                {loading && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 py-8">
                     {Array.from({ length: 8 }).map((_, i) => (
                       <div key={i} className="bg-[#F5F0F8] aspect-square rounded-lg animate-pulse" />
@@ -464,7 +445,7 @@ const Jewellery = () => {
                   </div>
                 )}
 
-                {!loading && products.length === 0 && !error && displayProducts.length === 0 && (
+                {!loading && products.length === 0 && !error && (
                   <div className="py-12 text-center text-[#888888] text-sm">
                     No products found. Try adjusting filters.
                   </div>

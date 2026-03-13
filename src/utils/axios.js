@@ -54,20 +54,24 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error?.config;
     const status = error?.response?.status;
+    const requestUrl = originalRequest?.url || "";
+    const isAuthEndpoint = requestUrl.startsWith("/auth");
 
-    if (status !== 401) {
+    // For non-auth endpoints, force logout on 401/403
+    if ((status === 401 || status === 403) && !isAuthEndpoint) {
+      clearAuthAndRedirect();
       return Promise.reject(error?.response?.data ?? error);
     }
 
+    // For auth endpoints (/auth/*) or other statuses, just bubble up the error
     if (shouldSkipRefresh(originalRequest)) {
       return Promise.reject(error?.response?.data ?? error);
     }
 
-    const refreshToken = Cookies.get("refreshToken");
-    if (!refreshToken) {
-      clearAuthAndRedirect();
-      return Promise.reject(error?.response?.data ?? error);
-    }
+    // const refreshToken = Cookies.get("refreshToken");
+    // if (!refreshToken) {
+    //   return Promise.reject(error?.response?.data ?? error);
+    // }
 
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
@@ -83,28 +87,28 @@ api.interceptors.response.use(
     originalRequest._retry = true;
     isRefreshing = true;
 
-    try {
-      const { data } = await api.post(
-        "/trade/refreshToken",
-        { refreshToken },
-        { skipAuth: true }
-      );
-      const newToken = data?.data?.token ?? null;
-      const newRefreshToken = data?.data?.refreshToken ?? null;
+    // try {
+    //   const { data } = await api.post(
+    //     "/trade/refreshToken",
+    //     { refreshToken },
+    //     { skipAuth: true }
+    //   );
+    //   const newToken = data?.data?.token ?? null;
+    //   const newRefreshToken = data?.data?.refreshToken ?? null;
 
-      if (newToken) Cookies.set("token", newToken);
-      if (newRefreshToken) Cookies.set("refreshToken", newRefreshToken);
+    //   if (newToken) Cookies.set("token", newToken);
+    //   if (newRefreshToken) Cookies.set("refreshToken", newRefreshToken);
 
-      processQueue(null, newToken);
-      originalRequest.headers.Authorization = `Bearer ${newToken}`;
-      return api(originalRequest);
-    } catch (refreshError) {
-      processQueue(refreshError, null);
-      clearAuthAndRedirect();
-      return Promise.reject(refreshError?.response?.data ?? refreshError);
-    } finally {
-      isRefreshing = false;
-    }
+    //   processQueue(null, newToken);
+    //   originalRequest.headers.Authorization = `Bearer ${newToken}`;
+    //   return api(originalRequest);
+    // } catch (refreshError) {
+    //   processQueue(refreshError, null);
+    //   clearAuthAndRedirect();
+    //   return Promise.reject(refreshError?.response?.data ?? refreshError);
+    // } finally {
+    //   isRefreshing = false;
+    // }
   }
 );
 

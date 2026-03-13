@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import productService from "../../../services/productSerive";
+import cartService from "../../../services/cartService";
+import wishlistService from "../../../services/wishlistService";
+import useSnackbar from "../../../hooks/useSnackbar";
 
 /* Product detail page – pixel-perfect to design. Uses index.css vars and product-level data. */
 
@@ -69,26 +72,6 @@ function normalizeDetailProduct(raw) {
   };
 }
 
-const DEMO_PRODUCT = {
-  name: "Livora Ring",
-  price: "₹19,08,236",
-  original: "₹19,99,000",
-  discountPct: 5,
-  images: [PLACEHOLDER_IMAGE, PLACEHOLDER_IMAGE, PLACEHOLDER_IMAGE, PLACEHOLDER_IMAGE],
-  mainImage: PLACEHOLDER_IMAGE,
-  ringSize: "11-Indian",
-  metal: "Gold",
-  purity: "18KT",
-  design: "Traditional",
-  grossWeight: "7.02 g",
-  metalColour: "Yellow",
-  ringSizeValue: "11",
-  collection: "—",
-  gender: "—",
-  occasion: "—",
-  certificate: "—",
-};
-
 const RING_SIZES = ["9-Indian", "10-Indian", "11-Indian", "12-Indian", "13-Indian", "14-Indian"];
 
 const PRODUCT_DETAILS_ROWS = (p) => [
@@ -149,6 +132,7 @@ const VideoIcon = () => (
 export default function ProductReview() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -157,9 +141,8 @@ export default function ProductReview() {
   const [pincode, setPincode] = useState("");
 
   const loadProduct = useCallback(async () => {
-    if (!id || String(id).startsWith("demo-")) {
-      setProduct(DEMO_PRODUCT);
-      setRingSize(DEMO_PRODUCT.ringSize);
+    if (!id) {
+      setError("Invalid product");
       setLoading(false);
       return;
     }
@@ -168,12 +151,11 @@ export default function ProductReview() {
     try {
       const raw = await productService.getProductById(id);
       const normalized = normalizeDetailProduct(raw);
-      setProduct(normalized ?? DEMO_PRODUCT);
-      setRingSize(normalized?.ringSize ?? DEMO_PRODUCT.ringSize);
+      setProduct(normalized);
+      setRingSize(normalized?.ringSize || RING_SIZES[2] || "");
     } catch (err) {
       setError(err?.message ?? "Failed to load product");
-      setProduct(DEMO_PRODUCT);
-      setRingSize(DEMO_PRODUCT.ringSize);
+      setProduct(null);
     } finally {
       setLoading(false);
     }
@@ -183,10 +165,7 @@ export default function ProductReview() {
     loadProduct();
   }, [loadProduct]);
 
-  const p = product ?? DEMO_PRODUCT;
-  const images = p.images?.length ? p.images : [p.mainImage ?? PLACEHOLDER_IMAGE];
-  const mainImageUrl = images[selectedImage] ?? images[0] ?? PLACEHOLDER_IMAGE;
-  const detailsRows = PRODUCT_DETAILS_ROWS(p);
+  const p = product;
 
   if (loading && !product) {
     return (
@@ -196,13 +175,88 @@ export default function ProductReview() {
     );
   }
 
+  if (!p) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center" style={{ fontFamily: fontRegular }}>
+        <p style={{ color: TEXT_MUTED, fontSize: textBase, marginBottom: 12 }}>{error || "Product not found."}</p>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 rounded-md border border-[#E0E0E0] text-[#333] hover:bg-[#F5F5F5]"
+          style={{ fontSize: textSm }}
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
+  const images = Array.isArray(p.images) && p.images.length
+    ? p.images
+    : [p.mainImage ?? PLACEHOLDER_IMAGE];
+  const mainImageUrl = images[selectedImage] ?? images[0] ?? PLACEHOLDER_IMAGE;
+  const detailsRows = PRODUCT_DETAILS_ROWS(p);
+
+  const availableRingSizes = (() => {
+    if (!p?.ringSize) return RING_SIZES;
+    if (RING_SIZES.includes(p.ringSize)) return RING_SIZES;
+    return [p.ringSize, ...RING_SIZES];
+  })();
+
+  const handleAddToCart = async () => {
+    if (!p?.id) return;
+    try {
+      const selectedOptions = {
+        ringSize: ringSize || p.ringSizeValue || "",
+        purity: p.purity || "",
+        metalColor: p.metalColour || "",
+      };
+      const payload = {
+        productId: p.id,
+        variantId: null,
+        quantity: 1,
+        selectedOptions,
+      };
+      const res = await cartService.addToCart(payload);
+      const message =
+        res?.message ||
+        res?.data?.message ||
+        "Added to cart successfully.";
+      showSnackbar(message, "success");
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to add to cart.";
+      showSnackbar(message, "error");
+    }
+  };
+
+  const handleAddToWishlist = async () => {
+    if (!p?.id) return;
+    try {
+      const res = await wishlistService.addToWishlist({ productId: p.id });
+      const message =
+        res?.message ||
+        res?.data?.message ||
+        "Added to wishlist successfully.";
+      showSnackbar(message, "success");
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to add to wishlist.";
+      showSnackbar(message, "error");
+    }
+  };
+
   return (
     <div
       className="min-h-screen bg-white text-[#000] max-w-[100vw] overflow-x-hidden"
       style={{ fontFamily: fontRegular }}
     >
       {/* Top bar */}
-      <header className="sticky top-0 z-20 bg-white border-b border-[#E5E7EB]">
+      <header className="sticky top-0 z-20 bg-white border-b border-[#E5E7EB] shadow-sm">
         <div className="flex items-center justify-between px-4 py-3 md:px-6">
           <button
             type="button"
@@ -219,9 +273,14 @@ export default function ProductReview() {
 
       <main className="pb-12 max-w-[1470px] mx-auto">
         <div className="px-4 md:px-6 lg:px-8 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
-            {/* Left: Image gallery — 75% on desktop, full width on small */}
-            <div className="space-y-3 lg:col-span-3  w-full">
+          {error && (
+            <div className="mb-4 px-3 py-2 rounded-md bg-red-50 text-red-700 text-sm border border-red-100">
+              {error}
+            </div>
+          )}
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-8 lg:gap-10">
+            {/* Left: Image gallery — 60% on desktop, full width on small */}
+            <div className="space-y-3">
               <div
                 className="aspect-square bg-[#F5F0F8] rounded-lg overflow-hidden border border-[#E0E0E0]"
                 style={{ maxHeight: "520px" }}
@@ -249,7 +308,7 @@ export default function ProductReview() {
             </div>
 
             {/* Right: Details & actions — 25% on desktop, full width on small */}
-            <div className="space-y-5 lg:col-span-2 w-full">
+            <div className="space-y-5">
               {/* Offer banner */}
               <div
                 className="flex items-center justify-between rounded-lg px-4 py-3 text-white"
@@ -293,16 +352,20 @@ export default function ProductReview() {
                   className="w-full max-w-[200px] border border-[#E0E0E0] rounded-md px-3 py-2 text-[#333] bg-white"
                   style={{ fontSize: textBase }}
                 >
-                  {RING_SIZES.map((s) => (
+                  {availableRingSizes.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
+                <p className="mt-1 text-[10px] text-[#6b7280]">
+                  Select your preferred ring size. Size is required to add this item to cart.
+                </p>
               </div>
 
               {/* Action buttons */}
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="button"
+                  onClick={handleAddToCart}
                   className="flex-1 min-w-[140px] py-3 px-6 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: ACCENT, fontSize: textSm }}
                 >
@@ -310,6 +373,7 @@ export default function ProductReview() {
                 </button>
                 <button
                   type="button"
+                  onClick={handleAddToWishlist}
                   className="flex items-center gap-2 py-3 px-4 rounded-lg border-2 border-[#6A2E8D] text-[#6A2E8D] font-semibold hover:bg-[#F8F2FC] transition-colors"
                   style={{ fontSize: textSm }}
                 >

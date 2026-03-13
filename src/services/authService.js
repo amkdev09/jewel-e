@@ -21,6 +21,10 @@ const authService = {
     const response = await api.post("/auth/send-otp", data);
     return response.data;
   },
+  getUser: async () => {
+    const response = await api.get("/user/profile");
+    return response.data;
+  },
 };
 
 export default authService;

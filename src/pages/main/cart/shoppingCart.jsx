@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import avatar from "../../../assets/images/avatar.png";
 import emptyStateIllustration from "../../../assets/svg/emptyShoppingCart.svg";
+import cartService from "../../../services/cartService";
+import useSnackbar from "../../../hooks/useSnackbar";
 
 const BTN_GRADIENT =
     "linear-gradient(90deg, #e879f9 0%, #a855f7 50%, #7c3aed 100%)";
@@ -256,10 +258,264 @@ const FooterBar = () => {
 
 /* ========== PAGE ========== */
 const ShoppingCart = () => {
+    const [cart, setCart] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { showSnackbar } = useSnackbar();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const loadCart = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const res = await cartService.getCart();
+                if (res?.success === false) {
+                    throw new Error(res?.message || "Failed to load cart");
+                }
+                setCart(res?.data ?? null);
+            } catch (err) {
+                setError(err?.message || "Failed to load cart");
+                setCart(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadCart();
+    }, []);
+
+    const handleRemove = async (item) => {
+        if (!item?.productId?._id && !item?.productId) return;
+        try {
+            const payload = {
+                productId: item.productId._id || item.productId,
+                variantId: item.variantId || null,
+            };
+            const res = await cartService.removeFromCart(payload);
+            const message =
+                res?.message ||
+                res?.data?.message ||
+                "Item removed from cart.";
+            showSnackbar(message, "success");
+            setCart(res?.data ?? cart);
+        } catch (err) {
+            const message =
+                err?.response?.data?.message ||
+                err?.message ||
+                "Failed to remove item.";
+            showSnackbar(message, "error");
+        }
+    };
+
+    const hasItems = Array.isArray(cart?.items) && cart.items.length > 0;
+
     return (
         <div className="min-h-screen flex flex-col bg-white font-inter-regular">
             <CartHeader />
-            <EmptyStateSection />
+            {loading ? (
+                <section className="flex-1 flex items-center justify-center px-4 py-12">
+                    <p className="text-[#6b7280] text-base">Loading your cart…</p>
+                </section>
+            ) : hasItems ? (
+                <section className="flex-1 px-4 py-6 max-w-[1200px] mx-auto w-full">
+                    {error && (
+                        <p className="mb-4 text-sm text-red-600 text-center">{error}</p>
+                    )}
+                    <h1 className="text-xl font-inter-semibold text-[#111827] mb-6">
+                        Shopping Bag ({cart.items.length})
+                    </h1>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-6 lg:gap-8">
+                        {/* Left column – items and try-at-home banner */}
+                        <div className="space-y-4">
+                            {/* See it before you buy banner */}
+                            <div className="rounded-2xl px-4 py-3 flex items-center justify-between bg-gradient-to-r from-[#bbf7d0] via-[#bfdbfe] to-[#fef3c7] border border-white shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow">
+                                        <span className="text-[#22c55e] text-lg">💬</span>
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-inter-semibold text-sm text-[#111827]">
+                                            See it before you buy it
+                                        </p>
+                                        <p className="text-xs text-[#4b5563]">
+                                            Experience our designs in detail with video call
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="hidden sm:inline-flex items-center justify-center px-4 py-2 rounded-full text-xs font-inter-semibold text-white shadow"
+                                    style={{ background: BTN_GRADIENT }}
+                                >
+                                    GET IT LIVE
+                                </button>
+                            </div>
+
+                            {/* Cart items card */}
+                            <div className="rounded-2xl border border-[#e5e7eb] bg-white shadow-sm overflow-hidden">
+                                {cart.items.map((item, idx) => {
+                                    const product = item.productId || {};
+                                    const name = product.name || "Product";
+                                    const image =
+                                        (Array.isArray(product.images) && product.images[0]) || "";
+                                    const price = item.priceAtTime || product.basePrice || 0;
+                                    return (
+                                        <div
+                                            key={product._id || product.id || idx}
+                                            className="flex gap-4 px-4 py-4 border-b last:border-b-0 border-[#f3f4f6]"
+                                        >
+                                            <div className="w-20 h-24 rounded-md bg-[#f9fafb] overflow-hidden flex-shrink-0">
+                                                {image ? (
+                                                    <img
+                                                        src={image}
+                                                        alt={name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : null}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-inter-semibold text-[#111827] text-sm mb-1 truncate">
+                                                    {name}
+                                                </p>
+                                                {item.selectedOptions && (
+                                                    <p className="text-xs text-[#6b7280] mb-1 truncate">
+                                                        {Object.entries(item.selectedOptions)
+                                                            .map(([k, v]) => `${k}: ${v}`)
+                                                            .join(" • ")}
+                                                    </p>
+                                                )}
+                                                <p className="text-xs text-[#6b7280] mb-1">
+                                                    Quantity: {item.quantity}
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    className="text-xs text-[var(--color-pink)] underline"
+                                                >
+                                                    Check Delivery Date
+                                                </button>
+                                                <p className="mt-2 font-inter-semibold text-[#4b5563] text-sm">
+                                                    ₹{Number(price).toLocaleString("en-IN")}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemove(item)}
+                                                className="self-start text-xs text-[#9ca3af] hover:text-[#ef4444]"
+                                                aria-label="Remove item"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Right column – summary */}
+                        <aside className="space-y-4">
+                            {/* Offer banner */}
+                            <div className="rounded-2xl px-5 py-4 bg-gradient-to-r from-[#fecaca] via-[#f9a8d4] to-[#fef3c7] text-[#4b0f52] shadow-sm">
+                                <p className="text-xs uppercase tracking-wide mb-1 font-inter-semibold">
+                                    Offer
+                                </p>
+                                <p className="text-2xl font-inter-semibold leading-snug">
+                                    ₹500 OFF
+                                </p>
+                                <p className="text-xs text-[#6b21a8] mt-1 mb-3">
+                                    by completing your profile on the app
+                                </p>
+                                <button
+                                    type="button"
+                                    className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-white/90 text-xs font-inter-semibold text-[#ec4899] shadow-sm"
+                                >
+                                    DOWNLOAD APP
+                                </button>
+                            </div>
+
+                            {/* Apply coupon */}
+                            <button
+                                type="button"
+                                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-[#eef2ff] to-[#fef3f7] border border-[#e5e7eb] text-left"
+                            >
+                                <div>
+                                    <p className="text-sm font-inter-semibold text-[#111827]">
+                                        Apply Coupon
+                                    </p>
+                                    <p className="text-xs text-[#6b7280]">
+                                        Have a coupon? Redeem it here
+                                    </p>
+                                </div>
+                                <span className="inline-flex w-8 h-8 rounded-full items-center justify-center bg-white shadow text-[#ec4899]">
+                                    →
+                                </span>
+                            </button>
+
+                            {/* Delivery & store details */}
+                            <button
+                                type="button"
+                                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-[#e5e7eb] bg-white text-left"
+                            >
+                                <div>
+                                    <p className="text-sm font-inter-semibold text-[#111827]">
+                                        Check Delivery & Store Details
+                                    </p>
+                                    <p className="text-xs text-[#6b7280]">
+                                        Enter pincode to see delivery options
+                                    </p>
+                                </div>
+                                <span className="text-xs font-inter-semibold text-[var(--color-pink)]">
+                                    Enter Pincode
+                                </span>
+                            </button>
+
+                            {/* Price summary */}
+                            <div className="rounded-2xl border border-[#e5e7eb] bg-white px-4 py-4 space-y-2 text-sm text-[#4b5563]">
+                                <div className="flex items-center justify-between">
+                                    <span>Subtotal</span>
+                                    <span>
+                                        ₹{Number(cart.totalAmount || cart.totalBreakdown?.subTotal || 0).toLocaleString("en-IN")}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span>Coupon Discount</span>
+                                    <button
+                                        type="button"
+                                        className="text-xs font-inter-semibold text-[var(--color-pink)]"
+                                    >
+                                        Apply Coupon
+                                    </button>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span>Shipping (Standard)</span>
+                                    <span className="text-emerald-500 font-inter-semibold">Free</span>
+                                </div>
+                                <hr className="my-1 border-dashed border-[#e5e7eb]" />
+                                <div className="flex items-center justify-between pt-1">
+                                    <span className="font-inter-semibold text-[#111827]">
+                                        Total Cost
+                                    </span>
+                                    <span className="font-inter-semibold text-[#111827]">
+                                        ₹{Number(cart.totalAmount || 0).toLocaleString("en-IN")}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Place order button */}
+                            <button
+                                type="button"
+                                className="w-full h-11 rounded-full text-sm font-inter-semibold text-white shadow-md"
+                                style={{ background: BTN_GRADIENT }}
+                                onClick={() => navigate("/checkout/address")}
+                            >
+                                PLACE ORDER
+                            </button>
+                        </aside>
+                    </div>
+                </section>
+            ) : (
+                <EmptyStateSection />
+            )}
             <FooterBar />
         </div>
     );

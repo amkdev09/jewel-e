@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import authService from '../../services/authService';
 
 const initialState = {
   userData: null,
@@ -19,7 +20,7 @@ const userAuthSlice = createSlice({
       state.userData = action.payload;
     },
     getUserData: async (state, action) => {
-      const response = await authService.getUserData();
+      const response = await authService.getUser();
       if (response.success) {
         state.userData = response.data.user;
       }

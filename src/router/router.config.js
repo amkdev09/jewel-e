@@ -16,7 +16,7 @@ export const commonRouters = [
   },
   {
     path: "/jewellery",
-    component: asyncComponent(() => import("../pages/main/jewellery.jsx")),
+    component: asyncComponent(() => import("../pages/main/product/jewellery.jsx")),
   },
   {
     path: "/treasure",
@@ -49,8 +49,23 @@ export const commonRouters = [
     disableLayout: true,
   },
   {
+    path: "/checkout/address",
+    component: asyncComponent(() => import("../pages/main/cart/checkoutAddress.jsx")),
+    disableLayout: true,
+  },
+  {
+    path: "/checkout/gifting",
+    component: asyncComponent(() => import("../pages/main/cart/checkoutGifting.jsx")),
+    disableLayout: true,
+  },
+  {
+    path: "/checkout/payment",
+    component: asyncComponent(() => import("../pages/main/cart/checkoutPayment.jsx")),
+    disableLayout: true,
+  },
+  {
     path: "/product/:id",
-    component: asyncComponent(() => import("../pages/main/cart/productReview.jsx")),
+    component: asyncComponent(() => import("../pages/main/product/productReview.jsx")),
   },
 ];
 
