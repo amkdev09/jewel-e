@@ -110,7 +110,7 @@ const BreadcrumbBar = () => (
 
 const MobileFilterBar = ({ sortBy, onSortChange, onOpenFilters }) => (
   <div className="md:hidden sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-white border-b border-[#E0E0E0]">
-    <button type="button" onClick={onOpenFilters} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded border border-[#E0E0E0] text-[#333333] text-sm font-medium">
+    <button type="button" onClick={onOpenFilters} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded border border-[#E0E0E0] text-[#333333] text-sm font-medium touch-manipulation">
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
       </svg>
@@ -127,6 +127,106 @@ const MobileFilterBar = ({ sortBy, onSortChange, onOpenFilters }) => (
     </select>
   </div>
 );
+
+/** Mobile-only bottom sheet with Metal + Price filters (API-backed). */
+const MobileFilterDrawer = ({ isOpen, onClose, filters, onFilterChange, onClearAll }) => {
+  const { metalType, minPrice, maxPrice } = filters;
+  if (!isOpen) return null;
+  const handleClearAndClose = () => {
+    onClearAll();
+    onClose();
+  };
+  return (
+    <>
+      <div
+        className="md:hidden fixed inset-0 bg-black/50 z-40"
+        onClick={onClose}
+        onKeyDown={(e) => e.key === "Escape" && onClose()}
+        role="button"
+        tabIndex={0}
+        aria-label="Close filters"
+      />
+      <div
+        className="md:hidden fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-lg max-h-[85vh] overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mobile-filter-title"
+      >
+        <div className="sticky top-0 bg-white flex items-center justify-between px-4 py-3 border-b border-[#E0E0E0]">
+          <h2 id="mobile-filter-title" className="font-bold text-[#333333]" style={{ fontSize: "16px" }}>Filter By</h2>
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={handleClearAndClose} className="text-[#B069D6] hover:underline font-medium" style={{ fontSize: "14px" }}>Clear All</button>
+            <button type="button" onClick={onClose} className="p-2 -m-2 text-[#333333] hover:bg-[#F5F5F5] rounded-full" aria-label="Close">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+        </div>
+        <div className="px-4 pb-6">
+          <div className="border-b border-[#E0E0E0] py-4">
+            <p className="text-[#333333] font-normal mb-2" style={{ fontSize: "14px" }}>Metal</p>
+            <ul className="space-y-2 mt-2">
+              {METAL_TYPES.map((metal) => (
+                <li key={metal} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="mobile-metalType"
+                    id={`mobile-metal-${metal}`}
+                    checked={metalType === metal}
+                    onChange={() => onFilterChange({ metalType: metal })}
+                    className="border-[#E0E0E0] text-[#6A2E8D]"
+                  />
+                  <label htmlFor={`mobile-metal-${metal}`} className="text-[#333333] cursor-pointer capitalize" style={{ fontSize: "14px" }}>{metal}</label>
+                </li>
+              ))}
+              <li className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="mobile-metalType"
+                  id="mobile-metal-all"
+                  checked={!metalType}
+                  onChange={() => onFilterChange({ metalType: undefined })}
+                  className="border-[#E0E0E0] text-[#6A2E8D]"
+                />
+                <label htmlFor="mobile-metal-all" className="text-[#333333] cursor-pointer" style={{ fontSize: "14px" }}>All</label>
+              </li>
+            </ul>
+          </div>
+          <div className="py-4">
+            <p className="text-[#333333] font-normal mb-2" style={{ fontSize: "14px" }}>Price</p>
+            <div className="flex gap-2 items-center">
+              <input
+                type="number"
+                placeholder="Min"
+                min={0}
+                value={minPrice ?? ""}
+                onChange={(e) => onFilterChange({ minPrice: e.target.value === "" ? undefined : Number(e.target.value) })}
+                className="flex-1 border border-[#E0E0E0] rounded-[3px] px-3 py-2.5 text-[#333333]"
+                style={{ fontSize: "14px" }}
+              />
+              <input
+                type="number"
+                placeholder="Max"
+                min={0}
+                value={maxPrice ?? ""}
+                onChange={(e) => onFilterChange({ maxPrice: e.target.value === "" ? undefined : Number(e.target.value) })}
+                className="flex-1 border border-[#E0E0E0] rounded-[3px] px-3 py-2.5 text-[#333333]"
+                style={{ fontSize: "14px" }}
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-3.5 rounded-lg text-white font-semibold"
+            style={{ backgroundColor: "#6A2E8D", fontSize: "16px" }}
+          >
+            Apply Filters
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
 
 const FilterSidebar = ({ filters, onFilterChange, onClearAll }) => {
   const { metalType, minPrice, maxPrice } = filters;
@@ -305,6 +405,7 @@ const Jewellery = () => {
     minPrice: undefined,
     maxPrice: undefined,
   });
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const sentinelRef = useRef(null);
   const filtersRef = useRef(filters);
 
@@ -352,6 +453,13 @@ const Jewellery = () => {
   useEffect(() => {
     loadProducts(1, false);
   }, [filters.sortBy, filters.metalType, filters.categoryId, filters.minPrice, filters.maxPrice]);
+
+  useEffect(() => {
+    if (mobileFiltersOpen) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [mobileFiltersOpen]);
 
   useEffect(() => {
     if (!sentinelRef.current || loading || loadingMore || !hasMore) return;
@@ -409,7 +517,14 @@ const Jewellery = () => {
         <FilterSidebar filters={filters} onFilterChange={handleFilterChange} onClearAll={handleClearAll} />
         <div className="flex-1 flex flex-col min-w-0">
           <MobileHeader total={designCount} loading={loading} />
-          <MobileFilterBar sortBy={filters.sortBy} onSortChange={(v) => handleFilterChange({ sortBy: v })} onOpenFilters={() => { }} />
+          <MobileFilterBar sortBy={filters.sortBy} onSortChange={(v) => handleFilterChange({ sortBy: v })} onOpenFilters={() => setMobileFiltersOpen(true)} />
+          <MobileFilterDrawer
+            isOpen={mobileFiltersOpen}
+            onClose={() => setMobileFiltersOpen(false)}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onClearAll={handleClearAll}
+          />
           <div className="flex flex-col px-3 md:px-6 py-4 md:py-6">
             <div className="flex items-center justify-between mb-4 md:mb-5">
               <span className="text-[#333333] text-sm hidden md:block">

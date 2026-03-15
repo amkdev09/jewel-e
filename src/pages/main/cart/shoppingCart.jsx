@@ -16,7 +16,7 @@ const CartHeader = () => {
     return (
         <header className="sticky top-0 z-10 bg-white border-b border-[#e5e7eb]">
             <div className="px-4 py-4">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center md:justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <button
                             type="button"
@@ -32,7 +32,7 @@ const CartHeader = () => {
                             onClick={() => navigate("/")}
                             type="button"
                             aria-label="Account"
-                            className="w-8 h-8 rounded-full flex items-center bg-[var(--color-pink)] justify-center shadow-sm"
+                            className="w-8 h-8 rounded-full flex items-center bg-[var(--color-pink)] justify-center shadow-sm cursor-pointer hidden md:flex"
                         >
                             <figure className="w-7 h-7 rounded-full overflow-hidden object-cover bg-[#ffdee4]">
                                 <img src={avatar} alt="avatar" />
@@ -87,7 +87,7 @@ const CartHeader = () => {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2 text-[#374151]">
+                    <div className="flex items-center gap-2 text-[#374151] hidden md:flex">
                         <span className="text-sm font-inter-regular hidden sm:inline">Need Assistance?</span>
                         <button type="button" className="p-2 rounded-lg hover:bg-[#f3f4f6] transition-colors" aria-label="Chat">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,11 +257,106 @@ const FooterBar = () => {
     );
 };
 
+/* ========== COUPON MODAL (desktop: center modal, mobile: bottom drawer) ========== */
+const OTHER_OFFERS = [
+    { code: "MOUNT5", validTill: "March 31 2026", description: "Flat 5% Off on Solitaire Mount SKU", applicable: false },
+];
+
+const CouponModal = ({ isOpen, onClose, onApply }) => {
+    const [inputCode, setInputCode] = useState("");
+
+    const handleApply = () => {
+        const code = inputCode.trim();
+        if (code) {
+            onApply(code);
+            setInputCode("");
+            onClose();
+        }
+    };
+
+    if (!isOpen) return null;
+
+    const content = (
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh] w-full md:max-w-md">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e7eb]">
+                <h2 className="font-bold text-[#111827]" style={{ fontSize: "18px" }}>Apply Coupon</h2>
+                <button type="button" onClick={onClose} className="p-2 -m-2 text-[#6b7280] hover:text-[#111827] hover:bg-[#f3f4f6] rounded-full" aria-label="Close">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div className="p-4 space-y-4 overflow-y-auto">
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        placeholder="Enter coupon code"
+                        value={inputCode}
+                        onChange={(e) => setInputCode(e.target.value)}
+                        className="flex-1 border border-[#e5e7eb] rounded-xl px-4 py-3 text-[#111827] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#ec4899]/30 focus:border-[#ec4899]"
+                        style={{ fontSize: "14px" }}
+                    />
+                    <button
+                        type="button"
+                        onClick={handleApply}
+                        className="px-5 py-3 rounded-xl font-semibold text-white shrink-0"
+                        style={{ backgroundColor: "#ec4899", fontSize: "14px" }}
+                    >
+                        APPLY
+                    </button>
+                </div>
+                <div>
+                    <h3 className="font-semibold text-[#111827] mb-3" style={{ fontSize: "14px" }}>Other Offers at CaratLane</h3>
+                    <div className="space-y-3">
+                        {OTHER_OFFERS.map((offer) => (
+                            <div
+                                key={offer.code}
+                                className="flex rounded-xl border border-[#e5e7eb] overflow-hidden bg-white"
+                            >
+                                <div className="w-14 shrink-0 flex items-center justify-center bg-[#e5e7eb] text-[#4b5563] font-bold text-xs uppercase py-4 rounded-l-lg">
+                                    {offer.code.includes("5") ? "5% OFF" : "OFF"}
+                                </div>
+                                <div className="flex-1 p-3 flex flex-col justify-center min-w-0">
+                                    <p className="font-semibold text-[#111827] text-sm">{offer.code}</p>
+                                    <p className="text-xs text-[#6b7280]">Valid till {offer.validTill}</p>
+                                    <p className="text-xs text-[#4b5563] mt-0.5">{offer.description}</p>
+                                </div>
+                                <div className="shrink-0 flex items-center pr-3">
+                                    <span className="text-xs text-[#9ca3af]">Not Applicable</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <>
+            <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} aria-hidden />
+            <div
+                className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="coupon-modal-title"
+            >
+                <div
+                    className="w-full md:max-w-md rounded-t-2xl md:rounded-2xl overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {content}
+                </div>
+            </div>
+        </>
+    );
+};
+
 /* ========== PAGE ========== */
 const ShoppingCart = () => {
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [couponModalOpen, setCouponModalOpen] = useState(false);
+    const [appliedCouponCode, setAppliedCouponCode] = useState("");
     const { showSnackbar } = useSnackbar();
     const { decrementCartCount } = useCartCount();
     const navigate = useNavigate();
@@ -440,6 +535,7 @@ const ShoppingCart = () => {
                             {/* Apply coupon */}
                             <button
                                 type="button"
+                                onClick={() => setCouponModalOpen(true)}
                                 className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-[#eef2ff] to-[#fef3f7] border border-[#e5e7eb] text-left"
                             >
                                 <div>
@@ -447,13 +543,18 @@ const ShoppingCart = () => {
                                         Apply Coupon
                                     </p>
                                     <p className="text-xs text-[#6b7280]">
-                                        Have a coupon? Redeem it here
+                                        {appliedCouponCode ? `Code: ${appliedCouponCode}` : "Have a coupon? Redeem it here"}
                                     </p>
                                 </div>
                                 <span className="inline-flex w-8 h-8 rounded-full items-center justify-center bg-white shadow text-[#ec4899]">
                                     →
                                 </span>
                             </button>
+                            <CouponModal
+                                isOpen={couponModalOpen}
+                                onClose={() => setCouponModalOpen(false)}
+                                onApply={(code) => { setAppliedCouponCode(code); showSnackbar(`Coupon ${code} applied.`, "success"); }}
+                            />
 
                             {/* Delivery & store details */}
                             <button
@@ -485,9 +586,10 @@ const ShoppingCart = () => {
                                     <span>Coupon Discount</span>
                                     <button
                                         type="button"
+                                        onClick={() => setCouponModalOpen(true)}
                                         className="text-xs font-inter-semibold text-[var(--color-pink)]"
                                     >
-                                        Apply Coupon
+                                        {appliedCouponCode ? appliedCouponCode : "Apply Coupon"}
                                     </button>
                                 </div>
                                 <div className="flex items-center justify-between">
@@ -508,9 +610,9 @@ const ShoppingCart = () => {
                             {/* Place order button */}
                             <button
                                 type="button"
-                                className="w-full h-11 rounded-full text-sm font-inter-semibold text-white shadow-md"
+                                className="w-full h-11 rounded-lg text-sm font-inter-semibold text-white shadow-md"
                                 style={{ background: BTN_GRADIENT }}
-                                onClick={() => navigate("/checkout/address")}
+                                onClick={() => navigate("/checkout/address", { state: { couponCode: appliedCouponCode } })}
                             >
                                 PLACE ORDER
                             </button>

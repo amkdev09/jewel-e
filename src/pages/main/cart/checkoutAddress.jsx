@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import orderService from "../../../services/orderService";
+import cartService from "../../../services/cartService";
 import useSnackbar from "../../../hooks/useSnackbar";
 import useAuth from "../../../hooks/useAuth";
 
@@ -37,8 +38,36 @@ const CheckoutAddress = () => {
   const [mode, setMode] = useState("home"); // 'home' | 'store'
   const isHome = mode === "home";
   const navigate = useNavigate();
+  const location = useLocation();
   const { showSnackbar } = useSnackbar();
   const { userData } = useAuth();
+
+  const couponCode = location.state?.couponCode ?? "";
+
+  const [cart, setCart] = useState(null);
+  const [cartLoading, setCartLoading] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    const loadCart = async () => {
+      setCartLoading(true);
+      try {
+        const res = await cartService.getCart();
+        if (!cancelled && res?.data != null) setCart(res.data);
+        else if (!cancelled) setCart(null);
+      } catch {
+        if (!cancelled) setCart(null);
+      } finally {
+        if (!cancelled) setCartLoading(false);
+      }
+    };
+    loadCart();
+    return () => { cancelled = true; };
+  }, []);
+
+  const cartItems = Array.isArray(cart?.items) ? cart.items : [];
+  const subtotal = Number(cart?.totalAmount ?? cart?.totalBreakdown?.subTotal ?? 0);
+  const totalCost = Number(cart?.totalAmount ?? subtotal ?? 0);
+  const formatPrice = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
   const initialFirstName = userData?.name ? String(userData.name).split(" ")[0] : "";
   const initialLastName =
@@ -72,7 +101,38 @@ const CheckoutAddress = () => {
     mobile: userData?.phone || "",
   });
 
+  const [errors, setErrors] = useState({});
+
+  const validateShippingAddress = () => {
+    const next = {};
+    const name = `${contact.firstName} ${contact.lastName}`.trim() || userData?.name || "";
+    if (!name.trim()) {
+      if (!contact.firstName?.trim()) next.firstName = "First name is required";
+      if (!contact.lastName?.trim()) next.lastName = "Last name is required";
+    }
+    const phone = (contact.mobile || userData?.phone || "").replace(/\D/g, "");
+    if (!phone) next.mobile = "Mobile number is required";
+    else if (phone.length !== 10) next.mobile = "Enter a valid 10-digit mobile number";
+    if (isHome) {
+      if (!shipping.addressLine1?.trim()) next.addressLine1 = "Address (Street, Area) is required";
+      if (!shipping.city?.trim()) next.city = "City is required";
+      if (!shipping.state?.trim()) next.state = "State is required";
+      const pin = (shipping.pincode || "").replace(/\D/g, "");
+      if (!pin) next.pincode = "Pincode is required";
+      else if (pin.length !== 6) next.pincode = "Pincode must be 6 digits";
+    }
+    return next;
+  };
+
   const handleSaveAndContinue = async () => {
+    const validation = validateShippingAddress();
+    if (Object.keys(validation).length > 0) {
+      setErrors(validation);
+      showSnackbar("Please fix the errors in the form.", "error");
+      return;
+    }
+    setErrors({});
+
     const name = `${contact.firstName} ${contact.lastName}`.trim() || userData?.name || "";
     const phone = contact.mobile || userData?.phone || "";
 
@@ -86,7 +146,7 @@ const CheckoutAddress = () => {
       addressLine2: shipping.addressLine2,
     };
     try {
-      const res = await orderService.createOrderFromCart({ shippingAddress });
+      const res = await orderService.createOrderFromCart({ shippingAddress, couponCode });
       if (!res?.success) {
         throw new Error(res?.message || "Failed to create order");
       }
@@ -127,7 +187,7 @@ const CheckoutAddress = () => {
                 Address
               </h1>
             </div>
-            <div className="flex-1 flex justify-center">
+            <div className="flex-1 flex justify-center hidden md:block">
               <div className="max-w-md w-full">
                 <Stepper active={0} />
               </div>
@@ -141,6 +201,11 @@ const CheckoutAddress = () => {
               </span>
             </div>
           </div>
+          <div className="flex-1 flex justify-center md:hidden px-4">
+            <div className="max-w-md w-full">
+              <Stepper active={0} />
+            </div>
+          </div>  
         </div>
       </header>
 
@@ -179,15 +244,19 @@ const CheckoutAddress = () => {
                 <div className="space-y-3">
                   <h2 className="text-sm font-inter-semibold text-[#111827]">Shipping Address</h2>
                   <div className="grid grid-cols-1 gap-3">
-                    <input
-                      type="text"
-                      placeholder="Address (Street, Area)"
-                      value={shipping.addressLine1}
-                      onChange={(e) =>
-                        setShipping((prev) => ({ ...prev, addressLine1: e.target.value }))
-                      }
-                      className="w-full h-11 rounded-xl border border-[#e5e7eb] bg-white px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 focus:ring-[#a855f7]"
-                    />
+                    <div className="space-y-1">
+                      <input
+                        type="text"
+                        placeholder="Address (Street, Area)"
+                        value={shipping.addressLine1}
+                        onChange={(e) => {
+                          setShipping((prev) => ({ ...prev, addressLine1: e.target.value }));
+                          if (errors.addressLine1) setErrors((prev) => ({ ...prev, addressLine1: undefined }));
+                        }}
+                        className={`w-full h-11 rounded-xl border bg-white px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 ${errors.addressLine1 ? "border-red-500 focus:ring-red-500" : "border-[#e5e7eb] focus:ring-[#a855f7]"}`}
+                      />
+                      {errors.addressLine1 && <p className="text-[11px] text-red-500">{errors.addressLine1}</p>}
+                    </div>
                     <input
                       type="text"
                       placeholder="Landmark (Optional)"
@@ -199,39 +268,52 @@ const CheckoutAddress = () => {
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      placeholder="City"
-                      value={shipping.city}
-                      onChange={(e) =>
-                        setShipping((prev) => ({ ...prev, city: e.target.value }))
-                      }
-                      className="w-full h-11 rounded-xl border border-[#e5e7eb] bg-white px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 focus:ring-[#a855f7]"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Pincode"
-                      value={shipping.pincode}
-                      onChange={(e) =>
-                        setShipping((prev) => ({ ...prev, pincode: e.target.value }))
-                      }
-                      className="w-full h-11 rounded-xl border border-[#e5e7eb] bg-white px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 focus:ring-[#a855f7]"
-                    />
-                    <input
-                      type="text"
-                      placeholder="State"
-                      value={shipping.state}
-                      onChange={(e) =>
-                        setShipping((prev) => ({ ...prev, state: e.target.value }))
-                      }
-                      className="w-full h-11 rounded-xl border border-[#e5e7eb] bg-white px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 focus:ring-[#a855f7]"
-                    />
+                    <div className="space-y-1">
+                      <input
+                        type="text"
+                        placeholder="City"
+                        value={shipping.city}
+                        onChange={(e) => {
+                          setShipping((prev) => ({ ...prev, city: e.target.value }));
+                          if (errors.city) setErrors((prev) => ({ ...prev, city: undefined }));
+                        }}
+                        className={`w-full h-11 rounded-xl border bg-white px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 ${errors.city ? "border-red-500 focus:ring-red-500" : "border-[#e5e7eb] focus:ring-[#a855f7]"}`}
+                      />
+                      {errors.city && <p className="text-[11px] text-red-500">{errors.city}</p>}
+                    </div>
+                    <div className="space-y-1">
+                      <input
+                        type="text"
+                        placeholder="Pincode"
+                        value={shipping.pincode}
+                        onChange={(e) => {
+                          setShipping((prev) => ({ ...prev, pincode: e.target.value.replace(/\D/g, "").slice(0, 6) }));
+                          if (errors.pincode) setErrors((prev) => ({ ...prev, pincode: undefined }));
+                        }}
+                        maxLength={6}
+                        className={`w-full h-11 rounded-xl border bg-white px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 ${errors.pincode ? "border-red-500 focus:ring-red-500" : "border-[#e5e7eb] focus:ring-[#a855f7]"}`}
+                      />
+                      {errors.pincode && <p className="text-[11px] text-red-500">{errors.pincode}</p>}
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <input
+                        type="text"
+                        placeholder="State"
+                        value={shipping.state}
+                        onChange={(e) => {
+                          setShipping((prev) => ({ ...prev, state: e.target.value }));
+                          if (errors.state) setErrors((prev) => ({ ...prev, state: undefined }));
+                        }}
+                        className={`w-full h-11 rounded-xl border bg-white px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 ${errors.state ? "border-red-500 focus:ring-red-500" : "border-[#e5e7eb] focus:ring-[#a855f7]"}`}
+                      />
+                      {errors.state && <p className="text-[11px] text-red-500">{errors.state}</p>}
+                    </div>
                     <input
                       type="text"
                       placeholder="Country"
                       value="India"
                       readOnly
-                      className="w-full h-11 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af]"
+                      className="w-full h-11 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] md:col-span-2"
                     />
                   </div>
                 </div>
@@ -282,32 +364,42 @@ const CheckoutAddress = () => {
               <div className="space-y-3">
                 <h3 className="text-sm font-inter-semibold text-[#111827]">Contact Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="First Name"
-                    value={contact.firstName}
-                    onChange={(e) => setContact((prev) => ({ ...prev, firstName: e.target.value }))}
-                    className="w-full h-11 rounded-xl border border-[#f3e8ff] bg-[#faf5ff] px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 focus:ring-[#a855f7]"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Last Name"
-                    value={contact.lastName}
-                    onChange={(e) => setContact((prev) => ({ ...prev, lastName: e.target.value }))}
-                    className="w-full h-11 rounded-xl border border-[#f3e8ff] bg-[#faf5ff] px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 focus:ring-[#a855f7]"
-                  />
+                  <div className="space-y-1">
+                    <input
+                      type="text"
+                      placeholder="First Name"
+                      value={contact.firstName}
+                      onChange={(e) => { setContact((prev) => ({ ...prev, firstName: e.target.value })); if (errors.firstName) setErrors((prev) => ({ ...prev, firstName: undefined })); }}
+                      className={`w-full h-11 rounded-xl border bg-[#faf5ff] px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 ${errors.firstName ? "border-red-500 focus:ring-red-500" : "border-[#f3e8ff] focus:ring-[#a855f7]"}`}
+                    />
+                    {errors.firstName && <p className="text-[11px] text-red-500">{errors.firstName}</p>}
+                  </div>
+                  <div className="space-y-1">
+                    <input
+                      type="text"
+                      placeholder="Last Name"
+                      value={contact.lastName}
+                      onChange={(e) => { setContact((prev) => ({ ...prev, lastName: e.target.value })); if (errors.lastName) setErrors((prev) => ({ ...prev, lastName: undefined })); }}
+                      className={`w-full h-11 rounded-xl border bg-[#faf5ff] px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 ${errors.lastName ? "border-red-500 focus:ring-red-500" : "border-[#f3e8ff] focus:ring-[#a855f7]"}`}
+                    />
+                    {errors.lastName && <p className="text-[11px] text-red-500">{errors.lastName}</p>}
+                  </div>
                 </div>
                 <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2">
                   <div className="flex items-center justify-center px-3 h-11 rounded-xl border border-[#f3e8ff] bg-[#faf5ff] text-xs text-[#4b5563]">
                     IN +91
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Mobile Number"
-                    value={contact.mobile}
-                    onChange={(e) => setContact((prev) => ({ ...prev, mobile: e.target.value }))}
-                    className="w-full h-11 rounded-xl border border-[#f3e8ff] bg-[#faf5ff] px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 focus:ring-[#a855f7]"
-                  />
+                  <div className="space-y-1">
+                    <input
+                      type="text"
+                      placeholder="Mobile Number"
+                      value={contact.mobile}
+                      onChange={(e) => { setContact((prev) => ({ ...prev, mobile: e.target.value.replace(/\D/g, "").slice(0, 10) })); if (errors.mobile) setErrors((prev) => ({ ...prev, mobile: undefined })); }}
+                      maxLength={10}
+                      className={`w-full h-11 rounded-xl border bg-[#faf5ff] px-4 text-xs text-[#4b5563] placeholder:text-[#9ca3af] focus:outline-none focus:ring-1 ${errors.mobile ? "border-red-500 focus:ring-red-500" : "border-[#f3e8ff] focus:ring-[#a855f7]"}`}
+                    />
+                    {errors.mobile && <p className="text-[11px] text-red-500">{errors.mobile}</p>}
+                  </div>
                 </div>
               </div>
 
@@ -318,37 +410,33 @@ const CheckoutAddress = () => {
                   <button
                     type="button"
                     onClick={() => setBillingMode("same")}
-                    className={`w-full flex items-center justify-between h-11 px-4 rounded-xl border text-xs ${
-                      billingMode === "same"
+                    className={`w-full flex items-center justify-between h-11 px-4 rounded-xl border text-xs ${billingMode === "same"
                         ? "border-[#a855f7] bg-[#f5f3ff] text-[#4b0f52]"
                         : "border-[#e5e7eb] bg-white text-[#6b7280]"
-                    }`}
+                      }`}
                   >
                     <span>Same as shipping address</span>
                     <span
-                      className={`w-4 h-4 rounded-full border ${
-                        billingMode === "same"
+                      className={`w-4 h-4 rounded-full border ${billingMode === "same"
                           ? "border-[#a855f7] bg-[#a855f7]"
                           : "border-[#d1d5db] bg-white"
-                      }`}
+                        }`}
                     />
                   </button>
                   <button
                     type="button"
                     onClick={() => setBillingMode("different")}
-                    className={`w-full flex items-center justify-between h-11 px-4 rounded-xl border text-xs ${
-                      billingMode === "different"
+                    className={`w-full flex items-center justify-between h-11 px-4 rounded-xl border text-xs ${billingMode === "different"
                         ? "border-[#a855f7] bg-[#f5f3ff] text-[#4b0f52]"
                         : "border-[#e5e7eb] bg-white text-[#6b7280]"
-                    }`}
+                      }`}
                   >
                     <span>Use a different billing address</span>
                     <span
-                      className={`w-4 h-4 rounded-full border ${
-                        billingMode === "different"
+                      className={`w-4 h-4 rounded-full border ${billingMode === "different"
                           ? "border-[#a855f7] bg-[#a855f7]"
                           : "border-[#d1d5db] bg-white"
-                      }`}
+                        }`}
                     />
                   </button>
                 </div>
@@ -469,30 +557,64 @@ const CheckoutAddress = () => {
             </div>
           </section>
 
-          {/* Right: order summary skeleton */}
+          {/* Right: order summary from cart API */}
           <aside className="space-y-4">
             <div className="rounded-2xl border border-[#e5e7eb] bg-white p-4 space-y-3">
               <h2 className="text-xs font-inter-semibold text-[#6b7280] uppercase tracking-wide">
                 Order Summary
               </h2>
-              <div className="flex gap-3">
-                <div className="w-16 h-20 rounded-md bg-[#f9fafb]" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-inter-semibold text-[#111827] truncate">
-                    Product name
-                  </p>
-                  <p className="text-[11px] text-[#6b7280] mt-1">
-                    Size: 18 | Qty: 1
-                  </p>
-                  <p className="mt-2 text-sm font-inter-semibold text-[#4b0f52]">
-                    ₹46,723
-                  </p>
+              {cartLoading ? (
+                <div className="flex gap-3 py-2">
+                  <div className="w-16 h-20 rounded-md bg-[#f3f4f6] animate-pulse" />
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="h-3 w-3/4 bg-[#f3f4f6] rounded animate-pulse" />
+                    <div className="h-3 w-1/2 bg-[#f3f4f6] rounded animate-pulse" />
+                    <div className="h-4 w-16 bg-[#f3f4f6] rounded animate-pulse mt-2" />
+                  </div>
                 </div>
-              </div>
+              ) : cartItems.length === 0 ? (
+                <p className="text-xs text-[#6b7280] py-2">Your cart is empty.</p>
+              ) : (
+                <div className="space-y-3">
+                  {cartItems.map((item, idx) => {
+                    const product = item.productId || {};
+                    const name = product.name || "Product";
+                    const image = (Array.isArray(product.images) && product.images[0]) || "";
+                    const price = item.priceAtTime ?? product.basePrice ?? 0;
+                    const qty = Number(item.quantity) || 1;
+                    const optionsText = item.selectedOptions && typeof item.selectedOptions === "object"
+                      ? Object.entries(item.selectedOptions)
+                          .filter(([, v]) => v != null && v !== "")
+                          .map(([k, v]) => `${k}: ${v}`)
+                          .join(" | ")
+                      : "";
+                    return (
+                      <div key={product._id || product.id || idx} className="flex gap-3">
+                        <div className="w-16 h-20 rounded-md bg-[#f9fafb] overflow-hidden flex-shrink-0">
+                          {image ? (
+                            <img src={image} alt={name} className="w-full h-full object-cover" />
+                          ) : null}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-inter-semibold text-[#111827] truncate">
+                            {name}
+                          </p>
+                          <p className="text-[11px] text-[#6b7280] mt-1">
+                            {optionsText ? `${optionsText} | ` : ""}Qty: {qty}
+                          </p>
+                          <p className="mt-2 text-sm font-inter-semibold text-[#4b0f52]">
+                            {formatPrice(price)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               <div className="border-t border-[#f3f4f6] pt-2 space-y-1 text-xs text-[#4b5563]">
                 <div className="flex items-center justify-between">
                   <span>Subtotal</span>
-                  <span>₹46,723</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Shipping (Standard)</span>
@@ -500,7 +622,7 @@ const CheckoutAddress = () => {
                 </div>
                 <div className="flex items-center justify-between pt-1 text-[11px] font-inter-semibold text-[#111827]">
                   <span>TOTAL COST</span>
-                  <span>₹46,723</span>
+                  <span>{formatPrice(totalCost)}</span>
                 </div>
               </div>
             </div>

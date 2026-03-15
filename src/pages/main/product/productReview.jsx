@@ -104,23 +104,53 @@ function normalizeDetailProduct(raw) {
     stockReserved,
     priceBreakdown: breakdown
       ? {
-          goldWeight: breakdown.goldWeight,
-          goldRate: breakdown.goldRate,
-          goldAmount: breakdown.goldAmount,
-          diamondWeight: breakdown.diamondWeight,
-          diamondAmount: breakdown.diamondAmount,
-          makingCharges: breakdown.makingCharges,
-          variantAdjustment: breakdown.variantAdjustment,
-          subTotal: breakdown.subTotal,
-          gstRate: breakdown.gstRate,
-          gstAmount: breakdown.gstAmount,
-          finalPrice: breakdown.finalPrice,
-        }
+        goldWeight: breakdown.goldWeight,
+        goldRate: breakdown.goldRate,
+        goldAmount: breakdown.goldAmount,
+        diamondWeight: breakdown.diamondWeight,
+        diamondAmount: breakdown.diamondAmount,
+        makingCharges: breakdown.makingCharges,
+        variantAdjustment: breakdown.variantAdjustment,
+        subTotal: breakdown.subTotal,
+        gstRate: breakdown.gstRate,
+        gstAmount: breakdown.gstAmount,
+        finalPrice: breakdown.finalPrice,
+      }
       : null,
   };
 }
 
 const RING_SIZES = ["9-Indian", "10-Indian", "11-Indian", "12-Indian", "13-Indian", "14-Indian"];
+
+const badges = [
+  {
+      icon: (
+          <div
+              className="block mx-auto w-[43px] h-[29px] bg-[url('https://assets.cltstatic.com/images/responsive/cart-checkout.png?v1.0')] bg-[-136px_-385px] bg-[length:340px]"
+          ></div>
+      ),
+      line1: "BIS 100% Hall",
+      line2: "Marked Jewellery",
+  },
+  {
+      icon: (
+          <div
+              className="block mx-auto w-[66px] h-[33px] bg-[url('https://assets.cltstatic.com/images/responsive/cart-checkout.png?v1.0')] bg-[-199px_-368px] bg-[length:340px]"
+          ></div>
+      ),
+      line1: "Trust of Tanishq",
+      line2: "Titan Priviledges",
+  },
+  {
+      icon: (
+          <div
+              className="block mx-auto w-[51px] h-[26px] bg-[url('https://assets.cltstatic.com/images/responsive/cart-checkout.png?v1.0')] bg-[-91px_-424px] bg-[length:340px]"
+          ></div>
+      ),
+      line1: "100% Certified by",
+      line2: "Caratlane",
+  },
+];
 
 const PRODUCT_DETAILS_ROWS = (p) => {
   const fmtNum = (v) => (v != null && v !== "" ? String(v) : "—");
@@ -591,9 +621,8 @@ export default function ProductReview() {
                   type="button"
                   onClick={handleAddToCart}
                   disabled={!isInStock || addingToCart}
-                  className={`flex-1 min-w-[140px] py-3 px-6 rounded-lg font-semibold transition-opacity flex items-center justify-center gap-2 ${
-                    isInStock ? "text-white hover:opacity-90" : "cursor-not-allowed bg-gray-300 text-gray-500"
-                  } ${addingToCart ? "cursor-wait" : ""}`}
+                  className={`flex-1 min-w-[140px] py-3 px-6 rounded-lg font-semibold transition-opacity flex items-center justify-center gap-2 ${isInStock ? "text-white hover:opacity-90" : "cursor-not-allowed bg-gray-300 text-gray-500"
+                    } ${addingToCart ? "cursor-wait" : ""}`}
                   style={
                     isInStock
                       ? { backgroundColor: ACCENT, fontSize: textSm }
@@ -742,11 +771,15 @@ export default function ProductReview() {
               )}
 
               {/* Brand / Certified */}
-              <div className="flex items-center gap-6">
-                <div className="font-bold text-[#333]" style={{ fontSize: textXl }}>TATA</div>
-                <div className="flex items-center gap-2 rounded-full bg-[#22c55e] text-white px-3 py-1.5" style={{ fontSize: textXs }}>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                  Certified
+              <div className="w-full max-w-[350px] mx-auto mt-10">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  {badges.map((b, i) => (
+                    <div key={i} className="flex flex-col items-center text-center">
+                      <div className="mb-3">{b.icon}</div>
+                      <p className="font-inter-semibold text-[#374151] text-xs">{b.line1}</p>
+                      <p className="font-inter-regular text-[#374151] text-xs">{b.line2}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
