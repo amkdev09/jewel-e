@@ -84,12 +84,13 @@ const WishList = () => {
                     const name = p.name || "Product";
                     const image =
                         (Array.isArray(p.images) && p.images[0]) || "";
-                    const price = p.basePrice || 0;
+                    const price = p.basePrice ?? p.price?.basePrice ?? 0;
+                    const isInStock = p.inventory?.isInStock ?? true;
                     return (
                         <Link
                             key={p._id || p.id}
                             to={`/product/${p._id || p.id}`}
-                            className="bg-white rounded-lg border border-[#E5E7EB] overflow-hidden text-left hover:border-[var(--primary-color-a)] transition-colors"
+                            className={`bg-white rounded-lg border border-[#E5E7EB] overflow-hidden text-left hover:border-[var(--primary-color-a)] transition-colors block ${!isInStock ? "opacity-75" : ""}`}
                         >
                             <div className="relative aspect-square bg-[#F5F5F5]">
                                 {image && (
@@ -99,6 +100,15 @@ const WishList = () => {
                                         className="w-full h-full object-cover"
                                     />
                                 )}
+                                <span
+                                    className={`absolute top-2 left-2 rounded px-2 py-0.5 text-[10px] font-inter-semibold uppercase ${
+                                        isInStock
+                                            ? "bg-emerald-500 text-white"
+                                            : "bg-red-500 text-white"
+                                    }`}
+                                >
+                                    {isInStock ? "In stock" : "Out of stock"}
+                                </span>
                             </div>
                             <div className="p-3">
                                 <p className="font-inter-semibold text-[#111827] text-sm truncate mb-1">

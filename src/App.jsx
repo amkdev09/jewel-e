@@ -1,6 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { SnackbarProvider } from "./features/snackBar";
+import { CartCountProvider } from "./context/CartCountContext";
 import AppRouter from "./router";
 import ScrollToTop from "./components/ScrollToTop";
 import { store } from "./store/store";
@@ -12,7 +13,9 @@ function App() {
       <BrowserRouter>
         <ScrollToTop />
         <SnackbarProvider>
-          <AppRouter />
+          <CartCountProvider>
+            <AppRouter />
+          </CartCountProvider>
         </SnackbarProvider>
       </BrowserRouter>
     </Provider>

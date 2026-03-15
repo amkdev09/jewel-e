@@ -5,6 +5,7 @@ import { PiStorefront } from "react-icons/pi";
 import { IoIosSearch } from "react-icons/io";
 import avatar from "../../assets/images/avatar.png";
 import useAuth from "../../hooks/useAuth";
+import { useCartCount } from "../../context/CartCountContext";
 
 const ring = "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 
@@ -165,6 +166,7 @@ const MegaMenu = ({ isOpen, onClose, onEnterPanel, navigate }) => {
 const Header = () => {
     const navigate = useNavigate();
     const { isLoggedIn, userData } = useAuth();
+    const { cartCount } = useCartCount();
     const [activeNavItem, setActiveNavItem] = useState(null);
     const [megaMenuOpen, setMegaMenuOpen] = useState(false);
     const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
@@ -402,7 +404,9 @@ const Header = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#4F3267" viewBox="0 -960 960 960" style={{ color: "#4f3267" }}>
                                     <path d="M240-80q-33 0-56.5-23.5T160-160v-480q0-33 23.5-56.5T240-720h80q0-66 47-113t113-47 113 47 47 113h80q33 0 56.5 23.5T800-640v480q0 33-23.5 56.5T720-80zm160-640h160q0-33-23.5-56.5T480-800t-56.5 23.5T400-720m200 200q17 0 28.5-11.5T640-560v-80h-80v80q0 17 11.5 28.5T600-520m-240 0q17 0 28.5-11.5T400-560v-80h-80v80q0 17 11.5 28.5T360-520"></path>
                                 </svg>
-                                <span className="css-16zwby6">+</span>
+                                <span className="css-16zwby6" aria-label={`${cartCount} items in cart`}>
+                                    {cartCount > 0 ? cartCount : "+"}
+                                </span>
                             </span>
                         </button>
                     </div>

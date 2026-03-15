@@ -4,6 +4,7 @@ import productService from "../../../services/productSerive";
 import cartService from "../../../services/cartService";
 import wishlistService from "../../../services/wishlistService";
 import useSnackbar from "../../../hooks/useSnackbar";
+import { useCartCount } from "../../../context/CartCountContext";
 
 /* Product detail page – pixel-perfect to design. Uses index.css vars and product-level data. */
 
@@ -36,56 +37,110 @@ function formatPrice(value) {
 
 function normalizeDetailProduct(raw) {
   if (!raw || typeof raw !== "object") return null;
-  const name = raw.name ?? raw.title ?? "Livora Ring";
-  const priceNum = raw.price ?? raw.salePrice ?? raw.sellingPrice ?? 1908236;
-  const originalNum = raw.originalPrice ?? raw.mrp ?? 1999000;
-  const price = formatPrice(priceNum) ?? "₹19,08,236";
-  const original = originalNum != null ? formatPrice(originalNum) : "₹19,99,000";
-  const discountPct = originalNum > 0 && priceNum < originalNum
-    ? Math.round(((originalNum - priceNum) / originalNum) * 100)
-    : null;
+  const name = raw.name ?? raw.title ?? "";
+  const description = raw.description ?? "";
+  const breakdown = raw.price?.breakdown;
+  const priceNum =
+    breakdown?.finalPrice ??
+    raw.price?.basePrice ??
+    raw.basePrice ??
+    raw.price ??
+    raw.salePrice ??
+    raw.sellingPrice ??
+    0;
+  const price = formatPrice(priceNum) ?? "₹0";
+  const originalNum = raw.originalPrice ?? raw.mrp ?? null;
+  const original = originalNum != null ? formatPrice(originalNum) : null;
+  const discountPct =
+    originalNum != null && originalNum > 0 && priceNum < originalNum
+      ? Math.round(((originalNum - priceNum) / originalNum) * 100)
+      : null;
   const images = Array.isArray(raw.images)
     ? raw.images
     : raw.image
       ? [raw.image]
       : [raw.thumbnail ?? PLACEHOLDER_IMAGE];
   const mainImage = images[0] ?? PLACEHOLDER_IMAGE;
+  const inv = raw.inventory ?? {};
+  const isInStock = inv.isInStock ?? true;
+  const stockAvailable = inv.stockAvailable ?? 0;
+  const stockReserved = inv.stockReserved ?? 0;
+  const metalType = raw.metalType ?? raw.metal ?? "gold";
+  const metalColor = raw.metalColor ?? raw.metalColour ?? "yellow";
+  const purity = raw.purity ?? "—";
+  const goldWeight = raw.goldWeight != null ? raw.goldWeight : null;
+  const diamondWeight = raw.diamondWeight != null ? raw.diamondWeight : null;
+  const diamondType = raw.diamondType ?? "—";
+  const makingCharges = raw.makingCharges != null ? raw.makingCharges : null;
+  const gstRate = raw.gstRate != null ? raw.gstRate : null;
   return {
     id: raw.id ?? raw._id,
+    slug: raw.slug,
     name,
+    description,
     price,
     original,
     discountPct,
     images,
     mainImage,
     ringSize: raw.ringSize ?? "11-Indian",
-    metal: raw.metal ?? "Gold",
-    purity: raw.purity ?? "18KT",
-    design: raw.design ?? "Traditional",
-    grossWeight: raw.grossWeight ?? "7.02 g",
-    metalColour: raw.metalColour ?? "Yellow",
+    metal: metalType,
+    purity,
+    metalColour: metalColor,
+    goldWeight,
+    diamondWeight,
+    diamondType,
+    makingCharges,
+    gstRate,
     ringSizeValue: raw.ringSizeValue ?? "11",
     collection: raw.collection ?? "—",
     gender: raw.gender ?? "—",
     occasion: raw.occasion ?? "—",
     certificate: raw.certificate ?? "—",
+    isInStock,
+    stockAvailable,
+    stockReserved,
+    priceBreakdown: breakdown
+      ? {
+          goldWeight: breakdown.goldWeight,
+          goldRate: breakdown.goldRate,
+          goldAmount: breakdown.goldAmount,
+          diamondWeight: breakdown.diamondWeight,
+          diamondAmount: breakdown.diamondAmount,
+          makingCharges: breakdown.makingCharges,
+          variantAdjustment: breakdown.variantAdjustment,
+          subTotal: breakdown.subTotal,
+          gstRate: breakdown.gstRate,
+          gstAmount: breakdown.gstAmount,
+          finalPrice: breakdown.finalPrice,
+        }
+      : null,
   };
 }
 
 const RING_SIZES = ["9-Indian", "10-Indian", "11-Indian", "12-Indian", "13-Indian", "14-Indian"];
 
-const PRODUCT_DETAILS_ROWS = (p) => [
-  { label: "Metal", value: p?.metal ?? "Gold" },
-  { label: "Purity", value: p?.purity ?? "18KT" },
-  { label: "Design", value: p?.design ?? "Traditional" },
-  { label: "Gross Weight", value: p?.grossWeight ?? "7.02 g" },
-  { label: "Metal Colour", value: p?.metalColour ?? "Yellow" },
-  { label: "Ring Size", value: p?.ringSizeValue ?? "11" },
-  { label: "Collection", value: p?.collection ?? "—" },
-  { label: "Gender", value: p?.gender ?? "—" },
-  { label: "Occasion", value: p?.occasion ?? "—" },
-  { label: "Certificate", value: p?.certificate ?? "—" },
-];
+const PRODUCT_DETAILS_ROWS = (p) => {
+  const fmtNum = (v) => (v != null && v !== "" ? String(v) : "—");
+  const fmtWeight = (v) => (v != null ? `${v} g` : "—");
+  return [
+    { label: "Metal type", value: p?.metal ? String(p.metal).charAt(0).toUpperCase() + String(p.metal).slice(1) : "—" },
+    { label: "Metal colour", value: p?.metalColour ? String(p.metalColour).charAt(0).toUpperCase() + String(p.metalColour).slice(1) : "—" },
+    { label: "Purity", value: fmtNum(p?.purity) },
+    { label: "Gold weight", value: fmtWeight(p?.goldWeight) },
+    { label: "Diamond weight", value: fmtWeight(p?.diamondWeight) },
+    { label: "Diamond type", value: p?.diamondType ? String(p.diamondType).charAt(0).toUpperCase() + String(p.diamondType).slice(1) : "—" },
+    { label: "Making charges", value: p?.makingCharges != null ? formatPrice(p.makingCharges) : "—" },
+    { label: "GST rate", value: p?.gstRate != null ? `${p.gstRate}%` : "—" },
+    { label: "Stock available", value: fmtNum(p?.stockAvailable) },
+    { label: "Stock reserved", value: fmtNum(p?.stockReserved) },
+    { label: "Ring size", value: p?.ringSizeValue ?? p?.ringSize ?? "—" },
+    { label: "Collection", value: p?.collection ?? "—" },
+    { label: "Gender", value: p?.gender ?? "—" },
+    { label: "Occasion", value: p?.occasion ?? "—" },
+    { label: "Certificate", value: p?.certificate ?? "—" },
+  ];
+};
 
 const YOU_MAY_LIKE = [
   { id: "1", name: "RL0032", price: "₹14,999", image: PLACEHOLDER_IMAGE },
@@ -129,16 +184,32 @@ const VideoIcon = () => (
   </svg>
 );
 
+const ButtonSpinner = ({ className = "w-5 h-5" }) => (
+  <svg
+    className={`animate-spin ${className}`}
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    aria-hidden
+  >
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+  </svg>
+);
+
 export default function ProductReview() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
+  const { incrementCartCount } = useCartCount();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [ringSize, setRingSize] = useState("");
   const [pincode, setPincode] = useState("");
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [addingToWishlist, setAddingToWishlist] = useState(false);
 
   const loadProduct = useCallback(async () => {
     if (!id) {
@@ -203,8 +274,11 @@ export default function ProductReview() {
     return [p.ringSize, ...RING_SIZES];
   })();
 
+  const isInStock = p?.isInStock ?? true;
+
   const handleAddToCart = async () => {
-    if (!p?.id) return;
+    if (!p?.id || !isInStock) return;
+    setAddingToCart(true);
     try {
       const selectedOptions = {
         ringSize: ringSize || p.ringSizeValue || "",
@@ -223,17 +297,21 @@ export default function ProductReview() {
         res?.data?.message ||
         "Added to cart successfully.";
       showSnackbar(message, "success");
+      incrementCartCount(1);
     } catch (err) {
       const message =
         err?.response?.data?.message ||
         err?.message ||
         "Failed to add to cart.";
       showSnackbar(message, "error");
+    } finally {
+      setAddingToCart(false);
     }
   };
 
   const handleAddToWishlist = async () => {
     if (!p?.id) return;
+    setAddingToWishlist(true);
     try {
       const res = await wishlistService.addToWishlist({ productId: p.id });
       const message =
@@ -247,6 +325,8 @@ export default function ProductReview() {
         err?.message ||
         "Failed to add to wishlist.";
       showSnackbar(message, "error");
+    } finally {
+      setAddingToWishlist(false);
     }
   };
 
@@ -282,8 +362,7 @@ export default function ProductReview() {
             {/* Left: Image gallery — 60% on desktop, full width on small */}
             <div className="space-y-3">
               <div
-                className="aspect-square bg-[#F5F0F8] rounded-lg overflow-hidden border border-[#E0E0E0]"
-                style={{ maxHeight: "520px" }}
+                className="aspect-square bg-[#F5F0F8] overflow-hidden border border-[#E0E0E0]"
               >
                 <img
                   src={mainImageUrl}
@@ -291,15 +370,14 @@ export default function ProductReview() {
                   className="w-full h-full object-cover object-center"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {images.slice(0, 4).map((src, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => setSelectedImage(i)}
-                    className={`aspect-square rounded-md overflow-hidden border-2 bg-[#F5F0F8] ${
-                      selectedImage === i ? "border-[#6A2E8D]" : "border-transparent"
-                    }`}
+                    className={`aspect-square overflow-hidden border-1 bg-[#F5F0F8] ${selectedImage === i ? "border-[#6A2E8D]" : "border-transparent"
+                      }`}
                   >
                     <img src={src} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -325,7 +403,13 @@ export default function ProductReview() {
                 {p.name}
               </h1>
 
-              {/* Price */}
+              {p.description ? (
+                <p className="text-[#333]" style={{ fontSize: textBase, lineHeight: 1.5 }}>
+                  {p.description}
+                </p>
+              ) : null}
+
+              {/* Price & stock */}
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="font-bold text-[#000]" style={{ fontSize: text3xl }}>{p.price}</span>
                 {p.original && (
@@ -339,6 +423,12 @@ export default function ProductReview() {
                     {p.discountPct}% OFF
                   </span>
                 )}
+                <span
+                  className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${isInStock ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
+                    }`}
+                >
+                  {isInStock ? "In stock" : "Out of stock"}
+                </span>
               </div>
 
               {/* Ring size */}
@@ -366,19 +456,46 @@ export default function ProductReview() {
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="flex-1 min-w-[140px] py-3 px-6 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: ACCENT, fontSize: textSm }}
+                  disabled={!isInStock || addingToCart}
+                  className={`flex-1 min-w-[140px] py-3 px-6 rounded-lg font-semibold transition-opacity flex items-center justify-center gap-2 ${
+                    isInStock ? "text-white hover:opacity-90" : "cursor-not-allowed bg-gray-300 text-gray-500"
+                  } ${addingToCart ? "cursor-wait" : ""}`}
+                  style={
+                    isInStock
+                      ? { backgroundColor: ACCENT, fontSize: textSm }
+                      : { fontSize: textSm }
+                  }
+                  title={!isInStock ? "Out of stock" : undefined}
                 >
-                  ADD TO CART
+                  {addingToCart ? (
+                    <>
+                      <ButtonSpinner className="w-5 h-5 text-white" />
+                      <span>Adding…</span>
+                    </>
+                  ) : isInStock ? (
+                    "ADD TO CART"
+                  ) : (
+                    "OUT OF STOCK"
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={handleAddToWishlist}
-                  className="flex items-center gap-2 py-3 px-4 rounded-lg border-2 border-[#6A2E8D] text-[#6A2E8D] font-semibold hover:bg-[#F8F2FC] transition-colors"
+                  disabled={addingToWishlist}
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg border-2 border-[#6A2E8D] text-[#6A2E8D] font-semibold hover:bg-[#F8F2FC] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                   style={{ fontSize: textSm }}
                 >
-                  <HeartOutline />
-                  ADD TO WISHLIST
+                  {addingToWishlist ? (
+                    <>
+                      <ButtonSpinner className="w-5 h-5 text-[#6A2E8D]" />
+                      <span>Adding…</span>
+                    </>
+                  ) : (
+                    <>
+                      <HeartOutline />
+                      ADD TO WISHLIST
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
@@ -445,12 +562,50 @@ export default function ProductReview() {
                       className="flex justify-between items-center px-4 py-2.5 text-[#333]"
                       style={{ fontSize: textSm }}
                     >
-                      <span>{label}</span>
+                      <span className="capitalize">{label}</span>
                       <span className="font-medium">{value}</span>
                     </div>
                   ))}
                 </div>
               </div>
+
+              {/* Price breakdown (from API) */}
+              {p.priceBreakdown && (
+                <div className="border border-[#E0E0E0] rounded-lg overflow-hidden">
+                  <div
+                    className="px-4 py-3 border-b border-[#E0E0E0] font-bold text-[#000] uppercase tracking-wide"
+                    style={{ fontSize: textSm }}
+                  >
+                    Price Breakdown
+                  </div>
+                  <div className="divide-y divide-[#E0E0E0]">
+                    {[
+                      { label: "Gold weight", value: p.priceBreakdown.goldWeight != null ? `${p.priceBreakdown.goldWeight} g` : null },
+                      { label: "Gold rate", value: p.priceBreakdown.goldRate != null ? formatPrice(p.priceBreakdown.goldRate) : null },
+                      { label: "Gold amount", value: p.priceBreakdown.goldAmount != null ? formatPrice(p.priceBreakdown.goldAmount) : null },
+                      { label: "Diamond weight", value: p.priceBreakdown.diamondWeight != null ? `${p.priceBreakdown.diamondWeight} g` : null },
+                      { label: "Diamond amount", value: p.priceBreakdown.diamondAmount != null ? formatPrice(p.priceBreakdown.diamondAmount) : null },
+                      { label: "Making charges", value: p.priceBreakdown.makingCharges != null ? formatPrice(p.priceBreakdown.makingCharges) : null },
+                      { label: "Variant adjustment", value: p.priceBreakdown.variantAdjustment != null ? formatPrice(p.priceBreakdown.variantAdjustment) : null },
+                      { label: "Subtotal", value: p.priceBreakdown.subTotal != null ? formatPrice(p.priceBreakdown.subTotal) : null },
+                      { label: "GST rate", value: p.priceBreakdown.gstRate != null ? `${p.priceBreakdown.gstRate}%` : null },
+                      { label: "GST amount", value: p.priceBreakdown.gstAmount != null ? formatPrice(p.priceBreakdown.gstAmount) : null },
+                      { label: "Final price", value: p.priceBreakdown.finalPrice != null ? formatPrice(p.priceBreakdown.finalPrice) : null },
+                    ]
+                      .filter((row) => row.value != null)
+                      .map(({ label, value }) => (
+                        <div
+                          key={label}
+                          className="flex justify-between items-center px-4 py-2.5 text-[#333]"
+                          style={{ fontSize: textSm }}
+                        >
+                          <span className="capitalize">{label}</span>
+                          <span className="font-medium">{value}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
 
               {/* Brand / Certified */}
               <div className="flex items-center gap-6">

@@ -94,7 +94,8 @@ function normalizeProduct(item) {
   const image = item.image ?? item.thumbnail ?? (Array.isArray(item.images) && item.images[0]) ?? item.mainImage ?? PLACEHOLDER_IMAGE;
   const badge = item.badge ?? (item.isNew ? "NEW" : null);
   const exclusive = Boolean(item.exclusive ?? item.isExclusive);
-  return { id: item.id ?? item._id, name, price, original, save, exclusive, badge, image };
+  const isInStock = item.inventory?.isInStock ?? false;
+  return { id: item.id ?? item._id, name, price, original, save, exclusive, badge, image, isInStock };
 }
 
 const BreadcrumbBar = () => (
@@ -229,42 +230,55 @@ const stopNav = (e) => {
   e.stopPropagation();
 };
 
-const ProductCard = ({ product }) => (
-  <Link to={`/product/${product.id ?? product.name}`} className="bg-white flex flex-col rounded-lg overflow-hidden block">
-    <div className="relative aspect-square bg-[#F5F0F8] overflow-hidden">
-      <img src={product.image} alt={product.name} className="w-full h-full object-cover object-center" loading="lazy" />
-      {product.badge && (
-        <span className="absolute top-2 left-2 font-bold text-black rounded px-1.5 py-0.5 text-[10px] bg-[#FFD700]">
-          {product.badge}
-        </span>
-      )}
-      <button type="button" onClick={stopNav} className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-sm" aria-label="Add to wishlist">
-        <HeartOutlineIcon />
-      </button>
-      <button type="button" onClick={stopNav} className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-[#6A2E8D]" aria-label="Compare">
-        <CompareIcon />
-      </button>
-    </div>
-    <div className="p-3 flex flex-col gap-1">
-      <div className="flex items-baseline gap-2 flex-wrap">
-        <span className="font-bold text-[#4E0756] text-base md:text-lg">{product.price}</span>
-        {product.original && <span className="text-[#B069D6] line-through text-sm">{product.original}</span>}
-      </div>
-      <button type="button" onClick={stopNav} className="text-[#B069D6] text-xs font-medium hover:underline w-fit text-left">
-        Check Delivery Date
-      </button>
-      <p className="text-[#333333] text-sm truncate">{product.name}</p>
-      <div className="flex items-center gap-2 mt-2 min-w-0">
-        <button type="button" onClick={stopNav} className="flex-1 min-w-0 border border-[#B069D6] text-[#6A2E8D] font-semibold text-[10px] sm:text-xs py-2.5 rounded hover:bg-[#F8F2FC] transition-colors">
-          <span className="block truncate">TRY AT HOME</span>
+const ProductCard = ({ product }) => {
+  const isInStock = product?.isInStock ?? false;
+  return (
+    <Link to={`/product/${product.id ?? product.name}`} className={`bg-white flex flex-col rounded-lg overflow-hidden block ${!isInStock ? "opacity-80" : ""}`}>
+      <div className="relative aspect-square bg-[#F5F0F8] overflow-hidden">
+        <img src={product.image} alt={product.name} className="w-full h-full object-cover object-center" loading="lazy" />
+        <div className="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap">
+          {!isInStock && (
+            <span
+              className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase bg-red-500 text-white
+                }`}
+            >
+              Out of stock
+            </span>
+          )}
+          {product.badge && (
+            <span className="font-bold text-black rounded px-1.5 py-0.5 text-[10px] bg-[#FFD700]">
+              {product.badge}
+            </span>
+          )}
+        </div>
+        <button type="button" onClick={stopNav} className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 shadow-sm" aria-label="Add to wishlist">
+          <HeartOutlineIcon />
         </button>
-        <button type="button" onClick={stopNav} className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded border-2 border-emerald-500 text-emerald-600 shrink-0 flex-shrink-0" aria-label="Video call">
-          <VideoCameraIcon />
+        <button type="button" onClick={stopNav} className="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-[#6A2E8D]" aria-label="Compare">
+          <CompareIcon />
         </button>
       </div>
-    </div>
-  </Link>
-);
+      <div className="py-3 flex flex-col gap-1">
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <span className="font-bold text-[var(--primary-color-a)] text-base md:text-lg">{product.price}</span>
+          {product.original && <span className="text-[var(--primary-color-b)] line-through text-sm">{product.original}</span>}
+        </div>
+        <button type="button" onClick={stopNav} className="text-[var(--primary-color-b)] text-xs font-medium hover:underline w-fit text-left">
+          Check Delivery Date
+        </button>
+        <p className="text-[#333333] text-sm truncate">{product.name}</p>
+        <div className="flex items-center gap-2 mt-2 min-w-0">
+          <button type="button" onClick={stopNav} className="flex-1 min-w-0 border border-[var(--primary-color-a)] text-[var(--primary-color-a)] font-semibold text-[10px] sm:text-xs py-2.5 rounded hover:bg-[#F8F2FC] transition-colors">
+            <span className="block truncate">TRY AT HOME</span>
+          </button>
+          <button type="button" onClick={stopNav} className="w-9 h-full flex items-center justify-center rounded border-1 border-emerald-500 text-emerald-600 shrink-0 flex-shrink-0" aria-label="Video call">
+            <VideoCameraIcon />
+          </button>
+        </div>
+      </div>
+    </Link>
+  );
+};
 
 const CATEGORY_TITLE = "Gemstone Jewellery";
 
@@ -395,7 +409,7 @@ const Jewellery = () => {
         <FilterSidebar filters={filters} onFilterChange={handleFilterChange} onClearAll={handleClearAll} />
         <div className="flex-1 flex flex-col min-w-0">
           <MobileHeader total={designCount} loading={loading} />
-          <MobileFilterBar sortBy={filters.sortBy} onSortChange={(v) => handleFilterChange({ sortBy: v })} onOpenFilters={() => {}} />
+          <MobileFilterBar sortBy={filters.sortBy} onSortChange={(v) => handleFilterChange({ sortBy: v })} onOpenFilters={() => { }} />
           <div className="flex flex-col px-3 md:px-6 py-4 md:py-6">
             <div className="flex items-center justify-between mb-4 md:mb-5">
               <span className="text-[#333333] text-sm hidden md:block">

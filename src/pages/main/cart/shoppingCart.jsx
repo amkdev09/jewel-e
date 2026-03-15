@@ -4,6 +4,7 @@ import avatar from "../../../assets/images/avatar.png";
 import emptyStateIllustration from "../../../assets/svg/emptyShoppingCart.svg";
 import cartService from "../../../services/cartService";
 import useSnackbar from "../../../hooks/useSnackbar";
+import { useCartCount } from "../../../context/CartCountContext";
 
 const BTN_GRADIENT =
     "linear-gradient(90deg, #e879f9 0%, #a855f7 50%, #7c3aed 100%)";
@@ -262,6 +263,7 @@ const ShoppingCart = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { showSnackbar } = useSnackbar();
+    const { decrementCartCount } = useCartCount();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -298,6 +300,8 @@ const ShoppingCart = () => {
                 "Item removed from cart.";
             showSnackbar(message, "success");
             setCart(res?.data ?? cart);
+            const qty = Number(item.quantity) || 1;
+            decrementCartCount(qty);
         } catch (err) {
             const message =
                 err?.response?.data?.message ||
