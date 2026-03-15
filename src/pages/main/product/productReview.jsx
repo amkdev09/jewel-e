@@ -3,7 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import productService from "../../../services/productSerive";
 import cartService from "../../../services/cartService";
 import wishlistService from "../../../services/wishlistService";
+import * as reviewService from "../../../services/reviewService";
 import useSnackbar from "../../../hooks/useSnackbar";
+import useAuth from "../../../hooks/useAuth";
 import { useCartCount } from "../../../context/CartCountContext";
 
 /* Product detail page – pixel-perfect to design. Uses index.css vars and product-level data. */
@@ -197,6 +199,34 @@ const ButtonSpinner = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
+function formatReviewDate(isoString) {
+  if (!isoString) return "—";
+  try {
+    const d = new Date(isoString);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" });
+  } catch {
+    return "—";
+  }
+}
+
+const StarIcon = ({ filled, className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 20 20" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={filled ? 0 : 1.5}>
+    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+  </svg>
+);
+
+function StarRating({ value, max = 5, sizeClass = "w-5 h-5", gold }) {
+  const v = Math.min(max, Math.max(0, Number(value) || 0));
+  return (
+    <span className={`inline-flex items-center gap-0.5 ${gold ? "text-amber-500" : ""}`} role="img" aria-label={`${v} out of ${max} stars`}>
+      {Array.from({ length: max }, (_, i) => (
+        <StarIcon key={i} filled={i < v} className={sizeClass} />
+      ))}
+    </span>
+  );
+}
+
 export default function ProductReview() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -210,6 +240,17 @@ export default function ProductReview() {
   const [pincode, setPincode] = useState("");
   const [addingToCart, setAddingToCart] = useState(false);
   const [addingToWishlist, setAddingToWishlist] = useState(false);
+  const [reviewsData, setReviewsData] = useState(null);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [myReview, setMyReview] = useState(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewSubmitLoading, setReviewSubmitLoading] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
+  const [editingReviewId, setEditingReviewId] = useState(null);
+
+  const { isLoggedIn } = useAuth();
+  const REVIEWS_LIMIT = 5;
 
   const loadProduct = useCallback(async () => {
     if (!id) {
@@ -235,6 +276,99 @@ export default function ProductReview() {
   useEffect(() => {
     loadProduct();
   }, [loadProduct]);
+
+  const loadReviews = useCallback(async () => {
+    if (!id) return;
+    setReviewsLoading(true);
+    try {
+      const res = await reviewService.getReviewsByProduct(id, reviewsPage, REVIEWS_LIMIT);
+      if (res?.success && res?.data) setReviewsData(res.data);
+    } catch {
+      setReviewsData(null);
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, [id, reviewsPage]);
+
+  const loadMyReview = useCallback(async () => {
+    if (!id) return;
+    if (!isLoggedIn) {
+      setMyReview(null);
+      return;
+    }
+    try {
+      const res = await reviewService.getMyReview(id);
+      if (res?.success && res?.data) setMyReview(res.data);
+      else setMyReview(null);
+    } catch {
+      setMyReview(null);
+    }
+  }, [id, isLoggedIn]);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
+
+  useEffect(() => {
+    loadMyReview();
+  }, [loadMyReview]);
+
+  const openReviewModal = useCallback((edit = false) => {
+    if (edit && myReview) {
+      setReviewForm({ rating: myReview.rating ?? 5, comment: myReview.comment ?? "" });
+      setEditingReviewId(myReview._id);
+    } else {
+      setReviewForm({ rating: 5, comment: "" });
+      setEditingReviewId(null);
+    }
+    setReviewModalOpen(true);
+  }, [myReview]);
+
+  const closeReviewModal = useCallback(() => {
+    setReviewModalOpen(false);
+    setEditingReviewId(null);
+    setReviewForm({ rating: 5, comment: "" });
+  }, []);
+
+  const handleReviewSubmit = useCallback(async () => {
+    const { rating, comment } = reviewForm;
+    if (!id || rating < 1 || rating > 5) return;
+    setReviewSubmitLoading(true);
+    try {
+      if (editingReviewId) {
+        await reviewService.updateReview(editingReviewId, { rating, comment });
+        showSnackbar("Review updated successfully.", "success");
+      } else {
+        await reviewService.createReview({ productId: id, rating, comment });
+        showSnackbar("Thank you for your review!", "success");
+      }
+      closeReviewModal();
+      loadReviews();
+      loadMyReview();
+    } catch (err) {
+      const msg = err?.message ?? err?.response?.data?.message ?? "Could not save review.";
+      showSnackbar(msg, "error");
+    } finally {
+      setReviewSubmitLoading(false);
+    }
+  }, [id, reviewForm, editingReviewId, closeReviewModal, loadReviews, loadMyReview, showSnackbar]);
+
+  const handleDeleteReview = useCallback(async () => {
+    if (!editingReviewId) return;
+    setReviewSubmitLoading(true);
+    try {
+      await reviewService.deleteReview(editingReviewId);
+      showSnackbar("Review deleted.", "success");
+      closeReviewModal();
+      setMyReview(null);
+      loadReviews();
+    } catch (err) {
+      const msg = err?.message ?? err?.response?.data?.message ?? "Could not delete review.";
+      showSnackbar(msg, "error");
+    } finally {
+      setReviewSubmitLoading(false);
+    }
+  }, [editingReviewId, closeReviewModal, loadReviews, showSnackbar]);
 
   const p = product;
 
@@ -642,16 +776,231 @@ export default function ProductReview() {
             </div>
           </div>
 
-          {/* Rate Us */}
-          <div className="mt-8 flex justify-center">
-            <button
-              type="button"
-              className="py-3 px-8 rounded-lg text-white font-semibold hover:opacity-90"
-              style={{ backgroundColor: ACCENT, fontSize: textSm }}
+          {/* Customer Reviews */}
+          <section className="mt-10 border-t border-[#E0E0E0] pt-8" style={{ fontFamily: fontRegular }}>
+            <div className="flex flex-wrap items-start justify-between gap-6 mb-6">
+              <div>
+                <h2 className="font-bold text-[#333] mb-2" style={{ fontSize: textXl }}>Customer Reviews</h2>
+                <div className="flex items-center gap-2 mb-1 text-amber-500">
+                  <StarRating value={reviewsData?.averageRating ?? 0} sizeClass="w-6 h-6" gold />
+                  <span className="font-semibold text-[#333]" style={{ fontSize: textBase }}>
+                    {(reviewsData?.averageRating ?? 0).toFixed(1)}/5
+                  </span>
+                </div>
+                <p className="text-[#666]" style={{ fontSize: textSm }}>
+                  Based on {reviewsData?.totalReviews ?? 0} Ratings &amp; Reviews
+                </p>
+                {isLoggedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => openReviewModal(!!myReview)}
+                    className="mt-3 py-2.5 px-5 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: ACCENT, fontSize: textSm }}
+                  >
+                    {myReview ? "EDIT REVIEW" : "WRITE A REVIEW"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/login", { state: { from: `/product/${id}` } })}
+                    className="mt-3 py-2.5 px-5 rounded-lg text-white font-semibold hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: ACCENT, fontSize: textSm }}
+                  >
+                    WRITE A REVIEW
+                  </button>
+                )}
+              </div>
+              {reviewsData?.ratingDistribution && Object.keys(reviewsData.ratingDistribution).length > 0 && (
+                <div className="flex flex-col gap-1.5 min-w-[140px]">
+                  {[5, 4, 3, 2, 1].map((star) => (
+                    <div key={star} className="flex items-center gap-2">
+                      <StarRating value={star} max={5} sizeClass="w-4 h-4" />
+                      <span className="text-[#666]" style={{ fontSize: textXs }}>
+                        ({reviewsData.ratingDistribution[String(star)] ?? 0})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <h3 className="font-semibold text-[#333] mb-4" style={{ fontSize: textBase }}>
+              Customer Reviews{reviewsData?.total != null && reviewsData.total > 0 ? ` : Showing ${reviewsLoading ? "…" : `${(reviewsPage - 1) * REVIEWS_LIMIT + 1} - ${Math.min(reviewsPage * REVIEWS_LIMIT, reviewsData.total)} out of ${reviewsData.total}`}` : ""}
+            </h3>
+
+            {reviewsLoading ? (
+              <div className="py-8 text-center text-[#888]" style={{ fontSize: textSm }}>Loading reviews…</div>
+            ) : !reviewsData?.items?.length ? (
+              <div className="py-8 text-center text-[#888]" style={{ fontSize: textSm }}>No reviews yet. Be the first to review!</div>
+            ) : (
+              <>
+                <ul className="space-y-6">
+                  {reviewsData.items.map((rev) => (
+                    <li key={rev._id} className="bg-[#FAFAFA] rounded-xl p-4 border border-[#E0E0E0]">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[#E0E0E0] flex items-center justify-center shrink-0 text-[#888]">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="font-semibold text-[#333]" style={{ fontSize: textSm }}>
+                              {rev.userId?.name ?? "Customer"}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[#22c55e] text-xs font-medium">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                              VERIFIED PURCHASE
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mb-2 text-amber-500">
+                            <StarRating value={rev.rating} sizeClass="w-4 h-4" gold />
+                            <span className="text-[#666]" style={{ fontSize: textXs }}>{rev.rating}/5</span>
+                            <span className="text-[#888]" style={{ fontSize: textXs }}>{formatReviewDate(rev.createdAt)}</span>
+                          </div>
+                          {rev.comment ? (
+                            <p className="text-[#333]" style={{ fontSize: textSm }}>{rev.comment}</p>
+                          ) : null}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                {(reviewsData.totalPages ?? 0) > 1 && (
+                  <nav className="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Reviews pagination">
+                    <button
+                      type="button"
+                      disabled={reviewsPage <= 1}
+                      onClick={() => setReviewsPage(1)}
+                      className="py-2 px-3 rounded text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                      style={{ color: ACCENT }}
+                    >
+                      FIRST
+                    </button>
+                    <button
+                      type="button"
+                      disabled={reviewsPage <= 1}
+                      onClick={() => setReviewsPage((prev) => Math.max(1, prev - 1))}
+                      className="p-2 rounded border border-[#E0E0E0] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#F5F5F5]"
+                    >
+                      <BackArrow />
+                    </button>
+                    {(() => {
+                      const totalP = reviewsData.totalPages ?? 1;
+                      const start = Math.max(1, reviewsPage - 2);
+                      const end = Math.min(totalP, start + 4);
+                      const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+                      return pages.map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => setReviewsPage(pageNum)}
+                          className="w-9 h-9 rounded-full text-sm font-semibold transition-colors"
+                          style={{
+                            backgroundColor: reviewsPage === pageNum ? ACCENT : "transparent",
+                            color: reviewsPage === pageNum ? "#fff" : "#333",
+                          }}
+                        >
+                          {pageNum}
+                        </button>
+                      ));
+                    })()}
+                    <button
+                      type="button"
+                      disabled={reviewsPage >= (reviewsData.totalPages ?? 1)}
+                      onClick={() => setReviewsPage((prev) => prev + 1)}
+                      className="p-2 rounded border border-[#E0E0E0] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#F5F5F5] rotate-180"
+                    >
+                      <BackArrow />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={reviewsPage >= (reviewsData.totalPages ?? 1)}
+                      onClick={() => setReviewsPage(reviewsData.totalPages ?? 1)}
+                      className="py-2 px-3 rounded text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                      style={{ color: ACCENT }}
+                    >
+                      LAST
+                    </button>
+                  </nav>
+                )}
+              </>
+            )}
+          </section>
+
+          {/* Write / Edit Review Modal */}
+          {reviewModalOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+              onClick={(e) => e.target === e.currentTarget && closeReviewModal()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="review-modal-title"
             >
-              Rate Us
-            </button>
-          </div>
+              <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+                <h3 id="review-modal-title" className="font-bold text-[#333] mb-4" style={{ fontSize: textLg }}>
+                  {editingReviewId ? "Edit your review" : "Write a review"}
+                </h3>
+                <div className="mb-4">
+                  <p className="text-[#666] mb-2" style={{ fontSize: textSm }}>Rating</p>
+                  <div className="flex gap-1 text-amber-500">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setReviewForm((f) => ({ ...f, rating: star }))}
+                        className="p-1 rounded focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#6A2E8D]"
+                        aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                      >
+                        <StarIcon filled={star <= (reviewForm.rating || 0)} className="w-8 h-8" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mb-5">
+                  <label htmlFor="review-comment" className="block text-[#666] mb-2" style={{ fontSize: textSm }}>Comment</label>
+                  <textarea
+                    id="review-comment"
+                    value={reviewForm.comment}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, comment: e.target.value }))}
+                    placeholder="Share your experience with this product..."
+                    rows={4}
+                    className="w-full border border-[#E0E0E0] rounded-lg px-3 py-2 text-[#333] resize-none focus:outline-none focus:ring-2 focus:ring-[#6A2E8D] focus:border-transparent"
+                    style={{ fontSize: textSm }}
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleReviewSubmit}
+                    disabled={reviewSubmitLoading}
+                    className="py-2.5 px-5 rounded-lg text-white font-semibold disabled:opacity-70 transition-opacity"
+                    style={{ backgroundColor: ACCENT, fontSize: textSm }}
+                  >
+                    {reviewSubmitLoading ? <ButtonSpinner className="w-5 h-5 inline" /> : (editingReviewId ? "Update" : "Submit")}
+                  </button>
+                  {editingReviewId && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteReview}
+                      disabled={reviewSubmitLoading}
+                      className="py-2.5 px-5 rounded-lg border border-[#dc2626] text-[#dc2626] font-semibold hover:bg-[#dc2626]/5 disabled:opacity-70 transition-opacity"
+                      style={{ fontSize: textSm }}
+                    >
+                      Delete
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={closeReviewModal}
+                    className="py-2.5 px-5 rounded-lg border border-[#E0E0E0] text-[#333] font-semibold hover:bg-[#F5F5F5]"
+                    style={{ fontSize: textSm }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* You may also Like */}
           <section className="mt-12">

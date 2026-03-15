@@ -1,5 +1,6 @@
-import React, { createContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useState, useCallback, useEffect, useRef } from "react";
 import cartService from "../services/cartService";
+import useAuth from "../hooks/useAuth";
 
 const CartCountContext = createContext(null);
 
@@ -12,23 +13,30 @@ function getTotalCountFromCart(res) {
 
 export function CartCountProvider({ children }) {
   const [cartCount, setCartCount] = useState(0);
-  const [initialFetched, setInitialFetched] = useState(false);
-
-  const fetchCartCountOnce = useCallback(async () => {
-    if (initialFetched) return;
-    setInitialFetched(true);
-    try {
-      const res = await cartService.getCart();
-      const count = getTotalCountFromCart(res);
-      setCartCount(count);
-    } catch {
-      setCartCount(0);
-    }
-  }, [initialFetched]);
+  const initialFetchedRef = useRef(false);
+  const { isLoggedIn } = useAuth();
 
   useEffect(() => {
-    fetchCartCountOnce();
-  }, [fetchCartCountOnce]);
+    if (!isLoggedIn) {
+      initialFetchedRef.current = false;
+      queueMicrotask(() => setCartCount(0));
+      return;
+    }
+    if (initialFetchedRef.current) return;
+    initialFetchedRef.current = true;
+    let cancelled = false;
+    cartService
+      .getCart()
+      .then((res) => {
+        if (!cancelled) setCartCount(getTotalCountFromCart(res));
+      })
+      .catch(() => {
+        if (!cancelled) setCartCount(0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn]);
 
   const incrementCartCount = useCallback((delta = 1) => {
     setCartCount((prev) => Math.max(0, prev + delta));

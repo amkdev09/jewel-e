@@ -31,23 +31,23 @@ api.interceptors.request.use(
 const shouldSkipRefresh = (config) =>
   !config || config._retry === true || config.skipAuth === true;
 
-const clearAuthAndRedirect = () => {
-  localStorage.clear();
-  Cookies.remove("token");
-  Cookies.remove("refreshToken");
-  window.location.replace("/login");
-};
+// const clearAuthAndRedirect = () => {
+//   localStorage.clear();
+//   Cookies.remove("token");
+//   Cookies.remove("refreshToken");
+//   window.location.replace("/login");
+// };
 
 let isRefreshing = false;
 let failedQueue = [];
 
-const processQueue = (error, token = null) => {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error);
-    else resolve(token);
-  });
-  failedQueue = [];
-};
+// const processQueue = (error, token = null) => {
+//   failedQueue.forEach(({ resolve, reject }) => {
+//     if (error) reject(error);
+//     else resolve(token);
+//   });
+//   failedQueue = [];
+// };
 
 api.interceptors.response.use(
   (response) => response,
@@ -59,7 +59,7 @@ api.interceptors.response.use(
 
     // For non-auth endpoints, force logout on 401/403
     if ((status === 401 || status === 403) && !isAuthEndpoint) {
-      clearAuthAndRedirect();
+      // clearAuthAndRedirect();
       return Promise.reject(error?.response?.data ?? error);
     }
 

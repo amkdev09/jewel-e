@@ -427,7 +427,6 @@ const Jewellery = () => {
                     <option key={opt} value={opt}>{SORT_LABELS[opt] ?? opt}</option>
                   ))}
                 </select>
-                <MdKeyboardArrowDown style={{ fontSize: 16 }} />
               </div>
             </div>
 

@@ -25,6 +25,10 @@ const authService = {
     const response = await api.get("/user/profile");
     return response.data;
   },
+  updateProfile: async (payload) => {
+    const response = await api.put("/user/update-profile", payload);
+    return response.data;
+  },
 };
 
 export default authService;

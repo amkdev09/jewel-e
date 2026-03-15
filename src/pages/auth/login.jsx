@@ -380,7 +380,7 @@ const PasswordState = ({
             : "bg-[rgb(236,236,236)] text-[rgb(172,172,172)]"
           }`}
       >
-        LOGIN
+        {isSubmitting ? "Logging in..." : "LOGIN"}
       </button>
       <div className="flex justify-center my-[16px]">
         <button className="text-[var(--color-pink)] font-inter-regular text-sm border-none bg-transparent outline-none">

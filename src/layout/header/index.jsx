@@ -90,7 +90,7 @@ const MegaMenu = ({ isOpen, onClose, onEnterPanel, navigate }) => {
                         <div>
                             <h3 className="text-lg font-inter-semibold text-[var(--primary-color-b)] mb-4">By Style</h3>
                             <ul className="space-y-2.5 no-scrollbar">
-                                {MEGA_BY_STYLE.map((item, i) => (
+                                {MEGA_BY_STYLE.map((item) => (
                                     <li key={item}>
                                         <JewelleryLink to="/jewellery">
                                             {item}
@@ -147,7 +147,7 @@ const MegaMenu = ({ isOpen, onClose, onEnterPanel, navigate }) => {
                 </div>
                 {/* Bottom tabs */}
                 <div className="flex border-t justify-start border-[#e5e7eb] mt-6 py-4 mx-6">
-                    {MEGA_TABS.map((tab, i) => (
+                    {MEGA_TABS.map((tab) => (
                         <button
                             key={tab}
                             type="button"
@@ -165,7 +165,7 @@ const MegaMenu = ({ isOpen, onClose, onEnterPanel, navigate }) => {
 
 const Header = () => {
     const navigate = useNavigate();
-    const { isLoggedIn, userData } = useAuth();
+    const { isLoggedIn, userData, clear } = useAuth();
     const { cartCount } = useCartCount();
     const [activeNavItem, setActiveNavItem] = useState(null);
     const [megaMenuOpen, setMegaMenuOpen] = useState(false);
@@ -347,23 +347,34 @@ const Header = () => {
                                             <ul className="space-y-2 text-sm font-inter-regular tracking-wide">
                                                 <li>
                                                     <Link
+                                                        to="/profile"
+                                                        className="block py-0.5 text-[rgb(35, 21, 53)] uppercase hover:text-[var(--primary-color-a)]"
+                                                    >
+                                                       MY ACCOUNTS
+                                                    </Link>
+                                                </li>
+                                                {/* <li>
+                                                    <Link
                                                         to="/orders"
                                                         className="block py-0.5 text-[rgb(35, 21, 53)] uppercase hover:text-[var(--primary-color-a)]"
                                                     >
                                                         MY ACCOUNTS
                                                     </Link>
-                                                </li>
+                                                </li> */}
                                                 <li>
                                                     <Link
-                                                        to="/our-story"
+                                                        to="/orders"
                                                         className="block py-0.5 text-[rgb(35, 21, 53)] uppercase hover:text-[var(--primary-color-a)]"
                                                     >
-                                                        OUR STORY
+                                                        MY ORDERS
                                                     </Link>
                                                 </li>
                                                 <li>
                                                     <Link
-                                                        to="/logout"
+                                                        onClick={() => {
+                                                            clear();
+                                                            navigate("/login");
+                                                        }}
                                                         className="block py-0.5 text-[rgb(35, 21, 53)] uppercase hover:text-[var(--primary-color-a)]"
                                                     >
                                                         LOGOUT

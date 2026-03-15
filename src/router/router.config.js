@@ -70,6 +70,16 @@ export const commonRouters = [
 ];
 
 export const protectedRouters = [
+  {
+    path: "/profile",
+    component: asyncComponent(() => import("../pages/main/profile/index.jsx")),
+    isBottomNav: false,
+  },
+  {
+    path: "/orders",
+    component: asyncComponent(() => import("../pages/main/orders/index.jsx")),
+    isBottomNav: false,
+  },
 ];
 
 export const routers = [...commonRouters, ...protectedRouters];
