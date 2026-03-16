@@ -6,6 +6,7 @@ import { IoIosSearch } from "react-icons/io";
 import avatar from "../../assets/images/avatar.png";
 import useAuth from "../../hooks/useAuth";
 import { useCartCount } from "../../context/CartCountContext";
+import ConfirmationModal from "../../components/ConfirmationModal";
 
 const ring = "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 
@@ -171,6 +172,7 @@ const Header = () => {
     const [megaMenuOpen, setMegaMenuOpen] = useState(false);
     const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
     const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const navTimeoutRef = useRef(null);
     const accountDropdownRef = useRef(null);
     const servicesTimeoutRef = useRef(null);
@@ -370,15 +372,13 @@ const Header = () => {
                                                     </Link>
                                                 </li>
                                                 <li>
-                                                    <Link
-                                                        onClick={() => {
-                                                            clear();
-                                                            navigate("/login");
-                                                        }}
-                                                        className="block py-0.5 text-[rgb(35, 21, 53)] uppercase hover:text-[var(--primary-color-a)]"
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowLogoutConfirm(true)}
+                                                        className="block w-full text-left py-0.5 text-[rgb(35, 21, 53)] uppercase hover:text-[var(--primary-color-a)]"
                                                     >
                                                         LOGOUT
-                                                    </Link>
+                                                    </button>
                                                 </li>
                                             </ul>
                                         </>
@@ -502,6 +502,19 @@ const Header = () => {
                 </div>
                 <MegaMenu isOpen={megaMenuOpen} onClose={closeMega} onEnterPanel={cancelClose} navigate={navigate} />
             </nav>
+
+            <ConfirmationModal
+                open={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
+                onConfirm={() => {
+                    clear();
+                    navigate("/login");
+                }}
+                title="Logout"
+                description="Are you sure you want to logout from your account?"
+                okText="Logout"
+                cancelText="Cancel"
+            />
         </header >
     );
 };

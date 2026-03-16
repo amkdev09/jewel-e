@@ -8,7 +8,6 @@ import authService from "../../services/authService";
 import RedditInput from "../../components/input/redditInput";
 import useSnackbar from "../../hooks/useSnackbar";
 import RedditPasswordInput from "../../components/input/password";
-import axios from "axios";
 
 const LogoIcon = () => (
   <div className="sign-up-head">

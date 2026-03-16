@@ -1,5 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 const ring =
   "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
@@ -38,88 +44,98 @@ const ChevronRightIcon = () => (
 );
 
 const CategoryList = () => (
-  <ul className="m-0 pt-[8px] pr-[16px] pb-[16px] pl-[16px] list-none overflow-x-auto whitespace-nowrap bg-white scrollbar-hide md:hidden">
+  <ul className="m-0 py-2 px-4 list-none flex gap-2 overflow-x-auto bg-white scrollbar-hide md:hidden">
     {CATEGORY_ITEMS.map(({ label, image, to }) => (
-      <li
-        key={label}
-        className="inline-block rounded-[4px] p-0 my-0 mx-[6px] text-sm text-center text-[#231535] capitalize align-middle leading-[13px] h-[94px] w-[94px] bg-[#fff]"
-      >
-        <div className="mb-[7px] pt-[100%] relative rounded-[20px]">
-          <img
-            src={image}
-            alt={label}
-            className="rounded-[20px] absolute top-0 left-0 w-[94px] h-[94px] object-cover object-center"
-          />
-        </div>
-        <span className="w-[75px] line-clamp-2 whitespace-break-spaces overflow-hidden text-ellipsis leading-[13px] text-sm text-[#313131] mx-auto font-inter-regular">
-          {label}
-        </span>
+      <li key={label} className="shrink-0">
+        <Link
+          to={to}
+          className="flex flex-col items-center justify-start w-[86px]"
+        >
+          <div className="w-[78px] h-[78px] rounded-2xl overflow-hidden mb-1.5 shadow-sm bg-[#fff]">
+            <img
+              src={image}
+              alt={label}
+              className="w-full h-full object-cover object-center scale-150"
+            />
+          </div>
+          <span className="text-xs leading-[13px] text-[#313131] text-center font-inter-regular line-clamp-2">
+            {label}
+          </span>
+        </Link>
       </li>
     ))}
   </ul>
 );
 
-const Hero = () => (
-  <section className="flex items-center my-4 md:my-8 rounded-[12px] flex-col gap-4 md:gap-[24px] h-[280px] sm:h-[360px] md:h-[720px]">
-    <div className="relative w-full h-full flex items-center pl-4 md:pl-[40px] pr-4 rounded-[inherit]">
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-90 rounded-[inherit] bg-[#4E0756]"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, rgba(78, 7, 86, 0.47) 0%, rgba(78, 7, 86, 0.13) 50%,rgba(78, 7, 86, 0.33) 100%), url(https://images.unsplash.com/photo-1611955167811-4711904bb9f8?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)",
+const Hero = () => {
+  const slides = [
+    "https://images.unsplash.com/photo-1611955167811-4711904bb9f8",
+    "https://images.unsplash.com/photo-1613945408026-6732d875e701",
+    "https://images.unsplash.com/photo-1605100804763-247f67b3557e",
+  ];
+
+  return (
+    <section className="relative w-full h-[280px] sm:h-[360px] md:h-[720px] overflow-hidden rounded-[12px] my-4 md:my-8">
+      <Swiper
+        modules={[Navigation, Pagination, Autoplay]}
+        loop
+        autoplay={{ delay: 4000 }}
+        navigation={{
+          nextEl: ".hero-next",
+          prevEl: ".hero-prev",
         }}
-      />
-      <div className="relative z-10 max-w-[560px]">
-        <p
-          className="text-white text-sm md:text-2xl"
-          style={{ lineHeight: 1.3, marginBottom: "8px" }}
-        >
-          SHOP STUNNING DESIGNS WITH
-        </p>
-        <p
-          className="font-bold text-2xl sm:text-4xl md:text-[72px]"
-          style={{
-            lineHeight: 1.1,
-            color: "#FFE082",
-            marginBottom: "8px",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          EXTRA ₹500/GM
-        </p>
-        <p
-          className="text-white text-xs md:text-lg"
-          style={{ lineHeight: 1.4 }}
-        >
-          ON ALL CUSTOM GOLD JEWELLERY
-        </p>
-      </div>
-    </div>
-    <div className="flex items-center gap-2">
-      {[...Array(totalSlides)].map((_, index) => {
-        const slideNumber = index + 1;
+        pagination={{
+          el: ".hero-pagination",
+          clickable: true,
+        }}
+        className="h-full mb-10"
+      >
+        {slides.map((img, index) => (
+          <SwiperSlide key={index}>
+            <div className="relative w-full h-full">
+              {/* Background */}
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: `linear-gradient(90deg, rgba(78,7,86,0.47), rgba(78,7,86,0.13), rgba(78,7,86,0.33)), url(${img})`,
+                }}
+              />
 
-        if (slideNumber === currentSlide) {
-          return (
-            <span
-              key={slideNumber}
-              className="px-3 py-[4px] rounded-full bg-[#2F2F2F] text-white text-[12px] leading-none font-medium"
-            >
-              {currentSlide}/{totalSlides}
-            </span>
-          );
-        }
+              {/* Content */}
+              <div className="relative z-10 flex items-center h-full pl-4 md:pl-[40px] pr-4">
+                <div className="max-w-[560px] text-white">
+                  <p className="text-sm md:text-2xl mb-2">
+                    SHOP STUNNING DESIGNS WITH
+                  </p>
 
-        return (
-          <span
-            key={slideNumber}
-            className="w-2 h-2 rounded-full bg-gray-400 opacity-60"
-          />
-        );
-      })}
-    </div>
-  </section>
-);
+                  <h2 className="font-bold text-2xl sm:text-4xl md:text-[72px] text-[#FFE082] leading-none mb-2">
+                    EXTRA ₹500/GM
+                  </h2>
+
+                  <p className="text-xs md:text-lg">
+                    ON ALL CUSTOM GOLD JEWELLERY
+                  </p>
+                </div>
+              </div>
+            </div>
+          </SwiperSlide>
+        ))}
+
+        {/* Navigation Buttons */}
+        <button className="hero-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 text-white px-3 py-2 rounded-full hover:bg-black/60 transition">
+          ‹
+        </button>
+
+        <button className="hero-next absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 text-white px-3 py-2 rounded-full hover:bg-black/60 transition">
+          ›
+        </button>
+
+        {/* Pagination */}
+        <div className="hero-pagination absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2 text-black"></div>
+      </Swiper>
+    </section>
+  );
+};
 
 const BtnPrimary = ({ children, className = "" }) => (
   <button

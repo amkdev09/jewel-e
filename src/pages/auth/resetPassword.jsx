@@ -3,16 +3,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import RedditInput from "../../components/input/redditInput";
 import { loginUser } from "../../store/slices/userAuthSlice";
-import { IoMdFingerPrint } from "react-icons/io";
+import { MdOutlineFingerprint } from "react-icons/md";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
 const LogoIcon = () => (
-    <div className="sign-up-head" >
-        <p className="loader"><IoMdFingerPrint /></p>
+    <div className="sign-up-head">
+      <p className="loader">
+        <MdOutlineFingerprint />
+      </p>
     </div>
-);
-
+  );
 const GoogleIcon = () => (
     <svg width="38" height="38" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -313,7 +314,6 @@ const PasswordAndLogin = ({
     showPassword,
     setShowPassword,
     onChangeIdentifier,
-    status,
     isLoading,
     error,
     formik,

@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState, useCallback } from "react";
+import React, { memo, useMemo } from "react";
 import Header from "./header";
 import Footer from "./footer";
 import MobileHeader from "./header/mobileHeader";
@@ -18,7 +18,7 @@ const AppLayout = (props) => {
   return (
     <section>
       {isHeader && (isMobile ? <MobileHeader /> : <Header />)}
-      <div className="pt-[120px]">
+      <div className="pt-[100px] md:pt-[120px]">
         {children}
       </div>
       {isBottomNav && <Footer />}

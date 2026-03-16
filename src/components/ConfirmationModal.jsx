@@ -21,7 +21,6 @@ const ConfirmationModal = ({
   confirmColor = "primary",
   loading = false,
 }) => {
-
   const handleConfirm = () => {
     if (onConfirm) {
       onConfirm();
@@ -43,9 +42,10 @@ const ConfirmationModal = ({
       onClose={handleCancel}
       sx={{
         "& .MuiDialog-paper": {
-          background: `radial-gradient(ellipse at center, #1b1b1b, #0a0a0a)`,
+          background: "#ffffff",
           borderRadius: { xs: 2, sm: 2.5, md: 3 },
-          border: `1px solid #ffffff20`,
+          border: "1px solid #f3e8ff",
+          boxShadow: "0 18px 45px rgba(148, 59, 207, 0.25)",
         },
       }}
     >
@@ -54,26 +54,11 @@ const ConfirmationModal = ({
           pb: 1,
         }}
       >
-        <Typography
-          variant="body1"
-          sx={{
-            color: AppColors.TXT_MAIN,
-            fontSize: { xs: "1rem", sm: "1.25rem", md: "1.5rem", lg: "1.75rem" },
-          }}
-        >
-          {title}
-        </Typography>
+        <span className="text-lg font-bold text-[#231535]">{title}</span>
       </DialogTitle>
 
       <DialogContent sx={{ pt: 3, pb: 2 }}>
-        <Typography
-          variant="body1"
-          sx={{
-            color: AppColors.TXT_SUB,
-          }}
-        >
-          {description}
-        </Typography>
+        <p className="text-base text-[#4b5563]">{description}</p>
       </DialogContent>
 
       <DialogActions
@@ -83,28 +68,34 @@ const ConfirmationModal = ({
           gap: 1,
         }}
       >
-        <Button
+        <button
           onClick={handleCancel}
           disabled={loading}
-          sx={{
-            color: AppColors.TXT_SUB,
-            textTransform: "none",
-            px: 3,
-            "&:hover": {
-              bgcolor: AppColors.BG_CARD,
-              color: AppColors.TXT_MAIN,
-            },
+          className="px-3 py-1 rounded-md text-lg font-inter-regular"
+          style={{
+            background:
+              confirmColor !== "primary"
+                ? "linear-gradient(90deg, #e879f9 0%, #a855f7 50%, #7c3aed 100%)"
+                : "none",
+            color: confirmColor !== "primary" ? "#ffffff" : "#231535",
           }}
         >
           {cancelText}
-        </Button>
-        <Button
+        </button>
+        <button
           onClick={handleConfirm}
           disabled={loading}
-          className="btn-primary"
+          className="px-3 py-1 rounded-md text-lg font-inter-regular"
+          style={{
+            background:
+              confirmColor === "primary"
+                ? "linear-gradient(90deg, #e879f9 0%, #a855f7 50%, #7c3aed 100%)"
+                : "none",
+            color: confirmColor === "primary" ? "#ffffff" : "#231535",
+          }}
         >
           {okText}
-        </Button>
+        </button>
       </DialogActions>
     </Dialog>
   );
